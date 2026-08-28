@@ -345,6 +345,23 @@ input[type=number]{-moz-appearance:textfield;}
 }
 .venue-input:focus{border-color:var(--accent);}
 .header.home-mode{display:none;}
+.venue-browse-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);cursor:pointer;font-family:inherit;color:var(--text);
+  margin-bottom:8px;width:100%;
+}
+.venue-browse-item:active{opacity:.85;}
+.venue-browse-item.selected{border-color:var(--accent);background:var(--accent-soft);}
+.venue-browse-name{font-size:14px;font-weight:600;}
+.venue-browse-count{font-size:12px;color:var(--text-2);}
+.venue-preview-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.venue-preview-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--border);font-size:14px;
+}
+.venue-preview-row:last-child{border-bottom:none;}
+.venue-preview-price{font-family:'Space Mono',monospace;font-weight:700;color:var(--gold);font-size:13px;}
 
 /* ── Modal ── */
 .overlay{
@@ -580,14 +597,26 @@ input[type=number]{-moz-appearance:textfield;}
 
   <!-- MENU -->
   <section class="view" id="view-menu">
-    <p class="section-hint">Cargá acá los productos con su precio. Después los asignás tocando a cada persona en <b>Mesa</b>.</p>
-    <div class="menu-list" id="menu-list"></div>
-    <form class="add-prod" onsubmit="addProduct(event)">
-      <input class="n" type="text" placeholder="Nuevo producto" autocomplete="off" required>
-      <input class="pr" type="number" step="any" min="0" placeholder="$" required>
-      <button type="submit" aria-label="Agregar producto">+</button>
-    </form>
-    <div class="reset-line"><button class="reset-btn" onclick="resetAll()">Reiniciar mesa entera</button></div>
+    <!-- Venue browser (no active mesa) -->
+    <div id="menuBrowse" style="display:none">
+      <div style="padding:4px 2px 8px">
+        <div class="field-label" style="margin-bottom:8px">Elegí un bar para ver su menú</div>
+        <input class="venue-input" id="menuVenueSearch" type="text" placeholder="Buscar o escribir bar..." autocomplete="off" oninput="filterMenuVenues()">
+      </div>
+      <div id="menuVenueList" style="margin-top:4px"></div>
+      <div id="menuVenuePreview" style="margin-top:6px"></div>
+    </div>
+    <!-- Active menu editor (mesa in progress) -->
+    <div id="menuEditor">
+      <p class="section-hint">Cargá acá los productos con su precio. Después los asignás tocando a cada persona en <b>Mesa</b>.</p>
+      <div class="menu-list" id="menu-list"></div>
+      <form class="add-prod" onsubmit="addProduct(event)">
+        <input class="n" type="text" placeholder="Nuevo producto" autocomplete="off" required>
+        <input class="pr" type="number" step="any" min="0" placeholder="$" required>
+        <button type="submit" aria-label="Agregar producto">+</button>
+      </form>
+      <div class="reset-line"><button class="reset-btn" onclick="resetAll()">Reiniciar mesa entera</button></div>
+    </div>
   </section>
 </div>
 
@@ -773,7 +802,22 @@ function lineHTML(o,pid){
 }
 
 /* ── render: menu ── */
+function hasMesaActive(){
+  return state.venue || state.orders.length>0 || state.people.some(function(p){return p.name;});
+}
 function renderMenu(){
+  var browse=document.getElementById('menuBrowse');
+  var editor=document.getElementById('menuEditor');
+  if(!browse||!editor)return;
+  if(hasMesaActive()){
+    browse.style.display='none';editor.style.display='';
+    renderMenuList();
+  } else {
+    browse.style.display='';editor.style.display='none';
+    renderMenuVenues();
+  }
+}
+function renderMenuList(){
   const host=document.getElementById('menu-list');
   if(!host) return;
   host.innerHTML=state.products.map(pr=>
@@ -784,6 +828,61 @@ function renderMenu(){
       '<button class="prod-del" aria-label="Eliminar" onclick="delProduct('+pr.id+')">×</button>'+
     '</div>'
   ).join('') || '<div class="empty">Sin productos. Agregá abajo.</div>';
+}
+var _menuSelectedVenue=null;
+function renderMenuVenues(){
+  var venues=listKnownVenues();
+  var list=document.getElementById('menuVenueList');
+  var preview=document.getElementById('menuVenuePreview');
+  if(!list||!preview)return;
+  if(!venues.length){
+    list.innerHTML='<div class="empty" style="padding:20px 0;text-align:center">No hay bares guardados todavía.<br><span style="font-size:12px;color:var(--text-2)">Cuando cierres una mesa, el menú se guarda automáticamente.</span></div>';
+    preview.innerHTML='';
+    return;
+  }
+  filterMenuVenues();
+}
+function filterMenuVenues(){
+  var inp=document.getElementById('menuVenueSearch');
+  var q=(inp?inp.value:'').trim().toLowerCase();
+  var venues=listKnownVenues();
+  var filtered=q?venues.filter(function(v){return v.venue.toLowerCase().indexOf(q)>=0;}):venues;
+  var list=document.getElementById('menuVenueList');
+  if(!list)return;
+  list.innerHTML=filtered.map(function(v){
+    var sel=_menuSelectedVenue&&_menuSelectedVenue.toLowerCase()===v.venue.toLowerCase();
+    return '<button class="venue-browse-item'+(sel?' selected':'')+'" onclick="selectMenuVenue(\''+esc(v.venue.replace(/'/g,"\\'"))+'\')">'+
+      '<div><div class="venue-browse-name">📍 '+esc(v.venue)+'</div></div>'+
+      '<span class="venue-browse-count">'+v.products.length+' productos</span></button>';
+  }).join('');
+  if(!filtered.length&&q){
+    list.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;font-size:13px;color:var(--text-2)">No se encontró "'+esc(q)+'"</div>';
+  }
+  if(_menuSelectedVenue) showVenuePreview(_menuSelectedVenue);
+}
+function selectMenuVenue(name){
+  _menuSelectedVenue=(_menuSelectedVenue&&_menuSelectedVenue.toLowerCase()===name.toLowerCase())?null:name;
+  filterMenuVenues();
+  if(!_menuSelectedVenue){document.getElementById('menuVenuePreview').innerHTML='';return;}
+  showVenuePreview(name);
+}
+function showVenuePreview(name){
+  var preview=document.getElementById('menuVenuePreview');
+  if(!preview)return;
+  var menu=getVenueMenu(name);
+  if(!menu||!menu.products.length){preview.innerHTML='';return;}
+  var total=menu.products.reduce(function(s,p){return s+p.price;},0);
+  preview.innerHTML='<div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-top:4px">'+
+    '<div style="padding:14px 14px 10px"><div class="venue-preview-title">📍 '+esc(menu.venue)+'</div></div>'+
+    menu.products.map(function(p){
+      return '<div class="venue-preview-row">'+
+        '<span>'+esc(p.emoji||'🍽️')+' '+esc(p.name)+'</span>'+
+        '<span class="venue-preview-price">$'+money(p.price)+'</span></div>';
+    }).join('')+
+    '</div>'+
+    '<div style="padding:14px 0 4px;display:flex;gap:10px">'+
+      '<button class="home-btn primary" style="height:48px;font-size:14px" onclick="startMesaFromBrowse(\''+esc(menu.venue.replace(/'/g,"\\'"))+'\')">+ Nueva mesa en '+esc(menu.venue)+'</button>'+
+    '</div>';
 }
 
 /* ── timers ── */
@@ -1064,6 +1163,24 @@ function listKnownVenues(){
   return Object.keys(menus).map(function(k){return menus[k];}).filter(function(v){return v.products&&v.products.length;});
 }
 
+function startMesaFromBrowse(venue){
+  _menuSelectedVenue=null;
+  state={products:[],people:[],orders:[],expanded:null,view:'mesa',venue:venue};
+  var saved=getVenueMenu(venue);
+  if(saved){
+    state.products=saved.products.map(function(p){return {id:uid(),name:p.name,price:p.price,emoji:p.emoji||pickEmoji(p.name)};});
+  } else {
+    seedProducts();
+  }
+  for(var i=0;i<8;i++)state.people.push(mkPerson(''));
+  save();
+  if(sb){
+    createEventWithVenue(venue);
+  } else {
+    showView('mesa');render();
+    toast('Mesa creada en '+venue);
+  }
+}
 function openNewMesaSheet(){
   var venues=listKnownVenues();
   var suggestions=venues.length?
