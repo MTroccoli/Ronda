@@ -89,6 +89,7 @@ body{
   border-bottom:1px solid var(--border);
   box-shadow:var(--shadow);
   padding:14px 16px 12px;
+  padding-top:calc(env(safe-area-inset-top,0px) + 14px);
 }
 .header-top{
   display:flex;justify-content:space-between;align-items:baseline;
@@ -333,6 +334,12 @@ input[type=number]{-moz-appearance:textfield;}
 .home-recent-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .home-recent-sub{font-size:11px;color:var(--text-2);margin-top:1px;}
 .home-recent-code{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:1.5px;color:var(--gold);flex-shrink:0;}
+.home-recent-del{
+  width:28px;height:28px;border:none;background:transparent;cursor:pointer;
+  color:var(--text-2);font-size:16px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.home-recent-del:active{background:var(--accent-soft);color:var(--accent);}
 .venue-chip{
   display:inline-flex;align-items:center;gap:5px;
   font-size:12px;font-weight:600;color:var(--gold);
@@ -1156,10 +1163,11 @@ function renderHome(){
     if(list.length){
       recent.innerHTML='<div class="field-label">Mesas recientes</div>'+list.slice(0,6).map(function(m){
         var vn=m.venue?' · '+esc(m.venue):'';
-        return '<button class="home-recent-item" onclick="joinEvent(\''+esc(m.code)+'\')">'+
-          '<div><div class="home-recent-name">'+(m.venue||'Mesa '+m.code)+'</div>'+
+        return '<div class="home-recent-item" onclick="joinEvent(\''+esc(m.code)+'\')">'+
+          '<div style="flex:1;min-width:0"><div class="home-recent-name">'+(m.venue||'Mesa '+m.code)+'</div>'+
           '<div class="home-recent-sub">'+esc(histDate(new Date(m.at).toISOString()))+vn+'</div></div>'+
-          '<span class="home-recent-code">'+esc(m.code)+'</span></button>';
+          '<span class="home-recent-code">'+esc(m.code)+'</span>'+
+          '<button class="home-recent-del" onclick="event.stopPropagation();removeRecent(\''+esc(m.code)+'\')" aria-label="Eliminar">&times;</button></div>';
       }).join('');
     } else recent.innerHTML='';
   }
@@ -1418,6 +1426,11 @@ function joinFromInput(){const el=document.getElementById('joinCode');if(el)join
 /* ── Mesas recientes ── */
 function loadRecent(){try{return JSON.parse(localStorage.getItem('ronda-recent')||'[]');}catch(e){return [];}}
 function saveRecent(list){try{localStorage.setItem('ronda-recent',JSON.stringify(list.slice(0,10)));}catch(e){}}
+function removeRecent(code){
+  var list=loadRecent().filter(function(m){return m.code!==code;});
+  saveRecent(list);
+  renderHome();
+}
 function rememberMesa(code,venue){
   if(!code)return;
   const list=loadRecent().filter(function(m){return m.code!==code;});
