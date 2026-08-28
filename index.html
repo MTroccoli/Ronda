@@ -1642,7 +1642,7 @@ async function loadClosures(){
     try{
       const {data,error}=await sb.from('ronda_closures').select('*').eq('event_id',cloud.eventId).order('closed_at',{ascending:false}).limit(100);
       if(error)throw error;
-      return (data||[]).map(function(r){return {id:r.id,closed_at:r.closed_at,code:r.code,total:Number(r.total),grand:Number(r.grand),tip:r.tip,override:r.override!=null?Number(r.override):null,people:(r.data&&r.data.people)||[],bill:(r.data&&r.data.bill)||[]};});
+      return (data||[]).map(function(r){return {id:r.id,closed_at:r.closed_at,code:r.code,venue:(r.data&&r.data.venue)||'',total:Number(r.total),grand:Number(r.grand),tip:r.tip,override:r.override!=null?Number(r.override):null,people:(r.data&&r.data.people)||[],bill:(r.data&&r.data.bill)||[]};});
     }catch(e){}
   }
   try{return JSON.parse(localStorage.getItem('ronda-history')||'[]');}catch(e){return [];}
@@ -1709,6 +1709,19 @@ function copyClosure(i){
   copyText(txt,'Cierre copiado');
 }
 
+async function syncVenueMenusFromCloud(){
+  if(!sb)return;
+  try{
+    var {data,error}=await sb.from('ronda_closures').select('data').order('closed_at',{ascending:false}).limit(200);
+    if(error||!data)return;
+    data.forEach(function(r){
+      var d=r.data;if(!d||!d.venue||!d.bill||!d.bill.length)return;
+      if(!getVenueMenu(d.venue)){
+        saveVenueMenu(d.venue,d.bill.map(function(b){return {name:b.name,price:b.price,emoji:b.emoji};}));
+      }
+    });
+  }catch(e){}
+}
 /* ── init ── */
 (function(){
   const hadData=load();
@@ -1725,6 +1738,8 @@ function copyClosure(i){
       }
     });
   }catch(e){}
+  // Also sync venue menus from cloud (async, background)
+  syncVenueMenusFromCloud();
   const hashCode=(location.hash.match(/m=([A-Za-z0-9]+)/)||[])[1];
   let stored=null; try{stored=JSON.parse(localStorage.getItem('ronda-event')||'null');}catch(e){}
   const code=hashCode||(stored&&stored.code);
