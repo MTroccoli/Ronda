@@ -1,0 +1,1393 @@
+<title>Ronda</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ronda">
+<meta name="theme-color" content="#fffdf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12110f" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+:root {
+  --bg: #f4efe7;
+  --surface: #fffdf8;
+  --surface-2: #ece6db;
+  --chip: #f0ebe1;
+  --accent: #c0392b;
+  --accent-soft: #f3ddd8;
+  --gold: #a67c17;
+  --active: #2f8f4e;
+  --shared: #2f6f8f;
+  --shared-soft: #dceaf0;
+  --text: #211f1a;
+  --text-2: #7c766a;
+  --border: #ddd6c9;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(50,40,20,0.07);
+  --shadow-lg: 0 12px 40px rgba(40,30,15,0.22);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg: #12110f;
+    --surface: #1e1c19;
+    --surface-2: #2a2823;
+    --chip: #2a2823;
+    --accent: #e8705f;
+    --accent-soft: #3a2622;
+    --gold: #e0b64a;
+    --active: #5ec97a;
+    --shared: #63b0d4;
+    --shared-soft: #1f3540;
+    --text: #ede8df;
+    --text-2: #928c7e;
+    --border: #322f29;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.55);
+  }
+}
+:root[data-theme="dark"]{
+  --bg: #12110f;
+  --surface: #1e1c19;
+  --surface-2: #2a2823;
+  --chip: #2a2823;
+  --accent: #e8705f;
+  --accent-soft: #3a2622;
+  --gold: #e0b64a;
+  --active: #5ec97a;
+  --shared: #63b0d4;
+  --shared-soft: #1f3540;
+  --text: #ede8df;
+  --text-2: #928c7e;
+  --border: #322f29;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.55);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+button,input,.chip,.pick,.seg button,label,a{touch-action:manipulation;}
+@media(pointer:coarse){
+  .name-input,.prod-name,.prod-price,.add-prod input{font-size:16px;}
+}
+body{
+  font-family:'Outfit',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+  padding-bottom:76px;
+}
+.wrap{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;}
+@media(min-width:560px){
+  body{background:var(--surface-2);}
+  .wrap{background:var(--bg);box-shadow:0 0 0 1px var(--border),var(--shadow-lg);}
+}
+.mono{font-family:'Space Mono',monospace;font-variant-numeric:tabular-nums;}
+
+/* ── Header ── */
+.header{
+  position:sticky;top:0;z-index:20;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow);
+  padding:14px 16px 12px;
+}
+.header-top{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:12px;
+}
+.brand{display:flex;align-items:baseline;gap:8px;}
+.brand h1{font-size:21px;font-weight:700;letter-spacing:-0.4px;}
+.brand .sub{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;}
+.clock{font-size:13px;color:var(--text-2);}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.stat{
+  background:var(--surface-2);border-radius:10px;
+  padding:8px 10px;text-align:center;
+}
+.stat-label{
+  display:block;font-size:9.5px;font-weight:600;letter-spacing:0.8px;
+  text-transform:uppercase;color:var(--text-2);margin-bottom:2px;
+}
+.stat-value{font-size:17px;font-weight:700;}
+.stat-value.gold{color:var(--gold);}
+.cloud-bar{
+  display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;
+  padding:8px 11px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-2);
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-align:left;
+}
+.cloud-bar.on{border-color:var(--active);color:var(--active);background:transparent;}
+.cloud-bar.err{border-color:var(--accent);color:var(--accent);background:transparent;}
+.cloud-bar svg{width:16px;height:16px;flex-shrink:0;}
+.cloud-bar #cloudLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cloud-bar .cloud-code{margin-left:auto;letter-spacing:1.5px;font-weight:700;flex-shrink:0;}
+.cloud-code-big{
+  font-size:34px;font-weight:700;text-align:center;letter-spacing:7px;
+  color:var(--gold);background:var(--surface-2);border-radius:12px;padding:16px 10px;margin-top:4px;
+}
+.toast{
+  position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:60;
+  background:var(--text);color:var(--bg);padding:10px 16px;border-radius:999px;
+  font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+
+/* ── Views ── */
+.view{display:none;padding:12px 12px 20px;}
+.view.active{display:block;}
+
+/* ── Person card ── */
+.people{display:flex;flex-direction:column;gap:9px;}
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+}
+.card.away{opacity:0.55;}
+.card-head{
+  display:flex;align-items:center;gap:10px;padding:11px 12px 11px 14px;
+}
+.avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;
+}
+.name-input{
+  flex:1;min-width:0;border:none;background:transparent;
+  font-family:inherit;font-size:15px;font-weight:600;color:var(--text);
+  padding:4px 6px;border-radius:7px;outline:none;
+  transition:background .15s;
+}
+.name-input:focus{background:var(--surface-2);}
+.card.away .name-input{text-decoration:line-through;color:var(--text-2);}
+.head-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.person-total{font-size:17px;font-weight:700;color:var(--gold);}
+.expand-btn{
+  width:30px;height:30px;border:none;background:transparent;
+  color:var(--text-2);cursor:pointer;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+}
+.expand-btn:active{background:var(--surface-2);}
+.chevron{transition:transform .25s;}
+.card.open .chevron{transform:rotate(180deg);}
+.timer-line{
+  display:flex;align-items:center;gap:5px;
+  padding:0 14px 9px;margin-top:-4px;
+}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot.on{background:var(--active);animation:pulse 2s ease-in-out infinite;}
+.dot.off{background:var(--text-2);opacity:.4;}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85);}50%{opacity:1;transform:scale(1);}}
+.timer{font-size:12px;color:var(--text-2);}
+
+.card-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.card.open .card-body{max-height:1400px;}
+.body-inner{padding:2px 12px 14px;border-top:1px solid var(--border);}
+
+/* breakdown lines */
+.lines{display:flex;flex-direction:column;gap:1px;margin:8px 0 4px;}
+.line{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 2px;border-bottom:1px solid var(--border);
+}
+.line:last-child{border-bottom:none;}
+.line-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.line-name{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.line-tag{font-size:11px;color:var(--shared);font-weight:600;}
+.stepper{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.step-btn{
+  width:26px;height:26px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);border-radius:7px;font-size:16px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.step-btn:active{background:var(--surface-2);}
+.qty{min-width:20px;text-align:center;font-size:13px;font-weight:700;}
+.line-price{font-size:14px;font-weight:700;min-width:56px;text-align:right;}
+.line-x{
+  width:26px;height:26px;border:none;background:transparent;color:var(--text-2);
+  font-size:17px;cursor:pointer;border-radius:6px;flex-shrink:0;
+}
+.line-x:active{background:var(--accent-soft);color:var(--accent);}
+.empty{padding:10px 2px;font-size:13px;color:var(--text-2);font-style:italic;}
+
+/* quick add chips */
+.qa-label{
+  font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;
+  color:var(--text-2);margin:12px 0 7px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{
+  border:1px solid var(--border);background:var(--chip);color:var(--text);
+  border-radius:999px;padding:7px 12px;font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform .08s;
+}
+.chip:active{transform:scale(.94);}
+.chip .p{font-size:11px;color:var(--text-2);font-family:'Space Mono',monospace;}
+.chip.add-new{border-style:dashed;color:var(--text-2);}
+
+.card-actions{display:flex;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);}
+.mini-btn{
+  flex:1;height:36px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer;
+}
+.mini-btn:active{opacity:.8;}
+.mini-btn.leave{border-color:var(--active);color:var(--active);background:transparent;}
+.mini-btn.leave.is-away{border-color:var(--gold);color:var(--gold);}
+.mini-btn.danger{border-color:var(--accent);color:var(--accent);background:transparent;flex:.7;}
+
+/* add person / shared buttons under list */
+.list-actions{display:flex;gap:9px;margin-top:12px;}
+.big-btn{
+  flex:1;height:48px;border-radius:var(--radius);cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.big-btn.ghost{border:2px dashed var(--border);background:transparent;color:var(--text-2);}
+.big-btn.ghost:active{border-color:var(--accent);color:var(--accent);}
+.big-btn.solid{border:none;background:var(--shared);color:#fff;}
+.big-btn.solid:active{opacity:.88;}
+
+/* ── Menu view ── */
+.menu-list{display:flex;flex-direction:column;gap:8px;}
+.prod-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:9px 10px 9px 14px;box-shadow:var(--shadow);
+}
+.prod-emoji{font-size:20px;flex-shrink:0;width:26px;text-align:center;}
+.prod-name{
+  flex:1;min-width:0;border:none;background:transparent;font-family:inherit;
+  font-size:15px;font-weight:600;color:var(--text);padding:4px 6px;border-radius:7px;outline:none;
+}
+.prod-name:focus{background:var(--surface-2);}
+.price-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.price-wrap .cur{color:var(--text-2);font-size:14px;font-weight:700;}
+.prod-price{
+  width:76px;border:1px solid var(--border);background:var(--bg);border-radius:8px;
+  font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--text);
+  padding:7px 8px;outline:none;text-align:right;
+}
+.prod-price:focus{border-color:var(--accent);}
+.prod-del{
+  width:30px;height:30px;border:none;background:transparent;color:var(--text-2);
+  font-size:17px;cursor:pointer;border-radius:7px;flex-shrink:0;
+}
+.prod-del:active{background:var(--accent-soft);color:var(--accent);}
+.add-prod{
+  display:flex;gap:8px;margin-top:12px;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;padding:10px;
+}
+.add-prod input{
+  height:42px;border:1px solid var(--border);border-radius:9px;padding:0 11px;
+  background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;outline:none;
+}
+.add-prod input:focus{border-color:var(--accent);}
+.add-prod .n{flex:1;min-width:0;}
+.add-prod .pr{width:78px;flex-shrink:0;text-align:right;font-family:'Space Mono',monospace;}
+.add-prod button{
+  width:42px;height:42px;flex-shrink:0;border:none;border-radius:9px;
+  background:var(--accent);color:#fff;font-size:22px;cursor:pointer;
+}
+.section-hint{font-size:12.5px;color:var(--text-2);margin:2px 2px 14px;line-height:1.5;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+input[type=number]{-moz-appearance:textfield;}
+
+/* ── Bottom nav ── */
+.nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:520px;z-index:30;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;box-shadow:0 -2px 12px rgba(40,30,15,0.08);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.nav-btn{
+  flex:1;border:none;background:transparent;cursor:pointer;
+  padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text-2);font-family:inherit;font-size:11px;font-weight:600;
+}
+.nav-btn.active{color:var(--accent);}
+.nav-btn svg{width:22px;height:22px;}
+
+/* ── Modal ── */
+.overlay{
+  position:fixed;inset:0;z-index:50;background:rgba(20,15,8,.5);
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.overlay.show{display:flex;}
+.sheet{
+  width:100%;max-width:520px;background:var(--surface);
+  border-radius:20px 20px 0 0;box-shadow:var(--shadow-lg);
+  padding:8px 16px calc(20px + env(safe-area-inset-bottom,0));
+  max-height:88vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.grabber{width:38px;height:4px;border-radius:2px;background:var(--border);margin:6px auto 14px;}
+.sheet h2{font-size:18px;font-weight:700;margin-bottom:3px;}
+.sheet .desc{font-size:13px;color:var(--text-2);margin-bottom:16px;}
+.field-label{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-2);margin:14px 0 8px;}
+.seg{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:3px;}
+.seg button{
+  flex:1;height:38px;border:none;border-radius:8px;background:transparent;
+  font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text-2);cursor:pointer;
+}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
+.ronda-btn{
+  width:100%;height:40px;border:1px dashed var(--shared);background:transparent;color:var(--shared);
+  border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.ronda-btn:active{background:var(--shared-soft);}
+.ind-list{display:flex;flex-direction:column;gap:6px;}
+.ind-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface-2);border-radius:11px;padding:7px 9px 7px 11px;
+}
+.ind-row .pav{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.ind-name{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ind-row.gone .ind-name{color:var(--text-2);}
+.ind-sub{font-size:11px;color:var(--text-2);font-weight:400;}
+.ind-step{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.ind-step button{
+  width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:18px;line-height:1;cursor:pointer;
+}
+.ind-step button:disabled{opacity:.35;}
+.ind-count{min-width:26px;text-align:center;font-size:16px;font-weight:700;}
+.ind-count.zero{color:var(--text-2);opacity:.5;}
+.people-pick{display:flex;flex-wrap:wrap;gap:7px;}
+.pick{
+  border:1px solid var(--border);background:var(--chip);color:var(--text);
+  border-radius:999px;padding:8px 13px;font-family:inherit;font-size:13.5px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:7px;
+}
+.pick .pav{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.pick.sel{background:var(--shared-soft);border-color:var(--shared);color:var(--shared);}
+.pick-all{align-self:flex-start;background:transparent;border:none;color:var(--shared);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 2px;margin-top:4px;}
+.qty-big{display:flex;align-items:center;gap:14px;justify-content:center;margin:6px 0;}
+.qty-big button{
+  width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);
+  color:var(--text);font-size:24px;cursor:pointer;
+}
+.qty-big .n{font-size:26px;font-weight:700;min-width:44px;text-align:center;}
+.share-preview{
+  background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-top:14px;
+  font-size:13px;color:var(--text-2);display:flex;justify-content:space-between;align-items:center;
+}
+.share-preview b{color:var(--gold);font-size:16px;}
+.sheet-actions{display:flex;gap:9px;margin-top:18px;}
+.sheet-btn{flex:1;height:48px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;border:none;}
+.sheet-btn.cancel{background:var(--surface-2);color:var(--text);flex:.6;}
+.sheet-btn.confirm{background:var(--shared);color:#fff;}
+.sheet-btn.confirm:disabled{opacity:.4;}
+.reset-line{text-align:center;margin-top:16px;}
+.reset-btn{border:none;background:transparent;color:var(--text-2);font-family:inherit;font-size:12px;cursor:pointer;opacity:.6;padding:4px 8px;}
+.reset-btn:active{color:var(--accent);opacity:1;}
+
+/* ── Confirm dialog ── */
+.confirm-overlay{align-items:center;z-index:70;padding:20px;}
+.confirm-box{
+  width:100%;max-width:390px;background:var(--surface);border-radius:18px;
+  box-shadow:var(--shadow-lg);padding:20px;animation:pop .18s ease;
+}
+@keyframes pop{from{transform:scale(.94);opacity:0;}to{transform:scale(1);opacity:1;}}
+.confirm-box h3{font-size:18px;font-weight:700;margin-bottom:3px;}
+.confirm-box .cf-sub{font-size:12.5px;color:var(--text-2);margin-bottom:15px;}
+.cf-item{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;
+  background:var(--surface-2);border-radius:12px;margin-bottom:8px;
+}
+.cf-emoji{font-size:23px;flex-shrink:0;}
+.cf-main{flex:1;min-width:0;}
+.cf-title{font-size:15px;font-weight:700;}
+.cf-desc{font-size:12px;color:var(--text-2);margin-top:1px;}
+.cf-amount{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--gold);flex-shrink:0;}
+.cf-people{font-size:12.5px;color:var(--shared);font-weight:600;margin:0 2px 4px;line-height:1.6;}
+.cf-total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:11px;border-top:1px solid var(--border);margin-top:6px;
+  font-size:13px;color:var(--text-2);
+}
+.cf-total b{font-size:19px;color:var(--gold);font-family:'Space Mono',monospace;}
+.cf-actions{display:flex;gap:9px;margin-top:17px;}
+.cf-btn{flex:1;height:48px;border-radius:12px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.cf-btn.no{background:var(--surface-2);color:var(--text);flex:.7;}
+.cf-btn.yes{background:var(--active);color:#fff;}
+.cf-btn.yes:active{opacity:.88;}
+
+/* ── Liquidación ── */
+.settle-btn{
+  width:100%;height:50px;margin-top:9px;border:none;border-radius:var(--radius);
+  background:var(--gold);color:#231c00;font-family:inherit;font-size:15px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow);
+}
+.settle-btn:active{opacity:.9;}
+.tip-label{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-2);margin:14px 0 8px;}
+.tip-row{display:flex;gap:7px;}
+.tip-chip{
+  flex:1;height:40px;border:1px solid var(--border);background:var(--chip);color:var(--text);
+  border-radius:9px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.tip-chip.on{background:var(--gold);color:#231c00;border-color:var(--gold);}
+.liq-list{margin:10px 0 2px;}
+.liq-row{display:flex;align-items:center;gap:11px;padding:10px 2px;border-bottom:1px solid var(--border);}
+.liq-row:last-child{border-bottom:none;}
+.liq-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.liq-main{flex:1;min-width:0;}
+.liq-name{font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.liq-time{font-size:11.5px;color:var(--text-2);margin-top:1px;}
+.liq-right{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.liq-amt{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--gold);}
+.liq-amt.zero{color:var(--text-2);opacity:.6;}
+.liq-pct{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-2);margin-top:1px;}
+.ov-row{display:flex;gap:8px;}
+.ov-row input{
+  flex:1;min-width:0;height:44px;border:1px solid var(--border);border-radius:9px;padding:0 12px;
+  background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;font-size:16px;outline:none;
+}
+.ov-row input:focus{border-color:var(--gold);}
+.ov-row button{
+  height:44px;padding:0 16px;flex-shrink:0;border:none;border-radius:9px;
+  background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+}
+.ov-note{font-size:11.5px;color:var(--text-2);margin:6px 2px 0;line-height:1.5;}
+.bill-list{margin-top:2px;}
+.bill-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--border);}
+.bill-row:last-child{border-bottom:none;}
+.bill-emoji{font-size:18px;flex-shrink:0;width:24px;text-align:center;}
+.bill-name{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bill-qty{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-2);flex-shrink:0;}
+.bill-sub{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;min-width:66px;text-align:right;flex-shrink:0;}
+.hist-list{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.hist-row{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:12px 13px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface-2);cursor:pointer;font-family:inherit;
+}
+.hist-row:active{opacity:.85;}
+.hist-main{flex:1;min-width:0;}
+.hist-date{font-size:14px;font-weight:700;color:var(--text);}
+.hist-sub{font-size:12px;color:var(--text-2);margin-top:1px;}
+.hist-amt{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--gold);flex-shrink:0;}
+.recent-list{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
+.recent-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 13px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface-2);cursor:pointer;font-family:inherit;color:var(--text);
+}
+.recent-row:active{opacity:.85;}
+.liq-grand{
+  display:flex;justify-content:space-between;align-items:center;margin-top:14px;
+  padding:13px 15px;background:var(--surface-2);border-radius:12px;
+}
+.liq-grand span{font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.6px;}
+.liq-grand b{font-size:23px;color:var(--gold);font-family:'Space Mono',monospace;}
+
+*:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+
+<div class="wrap">
+  <header class="header">
+    <div class="header-top">
+      <div class="brand"><h1>Ronda</h1><span class="sub">la mesa</span></div>
+      <span class="clock mono" id="clock">--:--</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-label">Total mesa</span><span class="stat-value gold mono" id="st-total">$0</span></div>
+      <div class="stat"><span class="stat-label">En mesa</span><span class="stat-value mono" id="st-people">0</span></div>
+      <div class="stat"><span class="stat-label">Ítems</span><span class="stat-value mono" id="st-items">0</span></div>
+    </div>
+    <button class="cloud-bar" id="cloudBar" onclick="openCloud()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6.5 18a4 4 0 0 1-.5-7.97A5 5 0 0 1 15.9 9.1 3.5 3.5 0 0 1 17 18H6.5z" stroke-linejoin="round"/></svg>
+      <span id="cloudLabel">Solo en este teléfono — tocá para sincronizar</span>
+      <span class="cloud-code mono" id="cloudCode"></span>
+    </button>
+  </header>
+
+  <!-- MESA -->
+  <section class="view active" id="view-mesa">
+    <div class="people" id="people"></div>
+    <div class="list-actions">
+      <button class="big-btn ghost" onclick="addPerson()">+ Persona</button>
+      <button class="big-btn solid" onclick="openLoad()">＋ Cargar a la mesa</button>
+    </div>
+    <button class="settle-btn" onclick="openSettle()">🧾 Cerrar y liquidar la mesa</button>
+  </section>
+
+  <!-- MENU -->
+  <section class="view" id="view-menu">
+    <p class="section-hint">Cargá acá los productos con su precio. Después los asignás tocando a cada persona en <b>Mesa</b>.</p>
+    <div class="menu-list" id="menu-list"></div>
+    <form class="add-prod" onsubmit="addProduct(event)">
+      <input class="n" type="text" placeholder="Nuevo producto" autocomplete="off" required>
+      <input class="pr" type="number" step="any" min="0" placeholder="$" required>
+      <button type="submit" aria-label="Agregar producto">+</button>
+    </form>
+    <div class="reset-line"><button class="reset-btn" onclick="resetAll()">Reiniciar mesa entera</button></div>
+  </section>
+</div>
+
+<!-- Bottom nav -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-mesa" onclick="showView('mesa')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M4 19c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M15.5 14.2c2 .3 3.5 2 3.5 4.3" stroke-linecap="round"/></svg>
+    Mesa
+  </button>
+  <button class="nav-btn" id="nav-menu" onclick="showView('menu')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke-linecap="round"/></svg>
+    Menú
+  </button>
+</nav>
+
+<!-- Shared modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Confirm dialog -->
+<div class="overlay confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box" id="confirmBox"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const EMOJI = ['🍷','🍕','🥖','🍺','🥤','🍟','🥩','🧀','🍞','☕','🍸','🥂','🌭','🍔','🫒','🍋'];
+const AV_COLORS = ['#c0392b','#2f8f4e','#2f6f8f','#a67c17','#8e44ad','#d35400','#16a085','#c2185b','#5d4037','#455a64'];
+
+let state = { products: [], people: [], orders: [], expanded: null, view: 'mesa' };
+// Globally-unique-enough numeric ids so two phones never collide on insert.
+const uid = () => Math.floor(Math.random()*9e15)+1;
+
+/* ── Supabase / nube ── */
+const SB_URL = 'https://qiwirnhxknmmwvcwgstg.supabase.co';
+const SB_KEY = 'sb_publishable_jEQ7KOmmNDbYAZwPH4AztA_c84OzXsu';
+let sb = null;
+try { if (window.supabase) sb = window.supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:false}}); } catch(e){}
+let cloud = null;            // { code, eventId }
+let applyingRemote = false;  // guard: don't push while applying server data
+let pushT=null, pullT=null, pollT=null, rtChannel=null, lastPush=0;
+
+/* ── formatting ── */
+function money(n){
+  if(!n) return '0';
+  const neg = n<0; n = Math.abs(n);
+  const int = Math.round(n)===n && Math.abs(n-Math.round(n))<1e-9;
+  let out;
+  if(int){ out = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  else { const p = n.toFixed(2).split('.'); out = p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+p[1]; }
+  return (neg?'-':'')+out;
+}
+function fmtTime(ms){
+  if(ms<0)ms=0; const s=Math.floor(ms/1000);
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60,p=n=>String(n).padStart(2,'0');
+  return h>0? h+':'+p(m)+':'+p(ss) : p(m)+':'+p(ss);
+}
+function mvd(ts){
+  try{return new Date(ts||Date.now()).toLocaleTimeString('es-UY',{timeZone:'America/Montevideo',hour:'2-digit',minute:'2-digit',hour12:false});}
+  catch(e){const d=new Date(ts||Date.now());return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+}
+function esc(s){const d=document.createElement('span');d.textContent=s==null?'':s;return d.innerHTML;}
+function initials(name,num){
+  const n=(name||'').trim();
+  if(!n) return String(num);
+  const parts=n.split(/\s+/);
+  return (parts.length>1? parts[0][0]+parts[1][0] : n.slice(0,2)).toUpperCase();
+}
+function avColor(id){return AV_COLORS[(id-1)%AV_COLORS.length];}
+
+/* ── persistence ── */
+function save(){
+  try{localStorage.setItem('ronda-v3',JSON.stringify(state));}catch(e){}
+  if(cloud && sb && !applyingRemote) schedulePush();
+}
+function load(){
+  try{
+    const raw=localStorage.getItem('ronda-v3');
+    if(raw){const p=JSON.parse(raw);
+      if(p&&Array.isArray(p.people)){state=Object.assign({expanded:null,view:'mesa'},p);return true;}}
+    // migrate v2 (people + free items) → v3
+    const old=localStorage.getItem('ronda-v2');
+    if(old){const o=JSON.parse(old);
+      if(o&&Array.isArray(o.people)){
+        state.people=o.people.map(pp=>({id:pp.id,num:pp.num,name:pp.name||'',arrivedAt:pp.arrivedAt,leftAt:pp.leftAt||null,accumulatedMs:pp.accumulatedMs||0}));
+        state.orders=[];
+        o.people.forEach(pp=>(pp.items||[]).forEach(it=>state.orders.push({id:uid(),name:it.name,unitPrice:it.price,qty:1,people:[pp.id]})));
+        seedProducts();
+        save(); return true;}}
+  }catch(e){}
+  return false;
+}
+function seedProducts(){
+  state.products=[
+    {id:uid(),name:'Vermouth',price:0,emoji:'🍷'},
+    {id:uid(),name:'Pizza',price:0,emoji:'🍕'},
+    {id:uid(),name:'Fainá',price:0,emoji:'🥖'},
+    {id:uid(),name:'Cerveza',price:0,emoji:'🍺'},
+  ];
+}
+
+/* ── calculations ── */
+const orderTotal = o => o.unitPrice * o.qty;
+const personShare = (o,pid) => o.people.includes(pid) ? orderTotal(o)/o.people.length : 0;
+function personTotal(pid){return state.orders.reduce((s,o)=>s+personShare(o,pid),0);}
+function tableTotal(){return state.orders.reduce((s,o)=>s+orderTotal(o),0);}
+
+/* ── render: header ── */
+function renderStats(){
+  const present=state.people.filter(p=>!p.leftAt).length;
+  document.getElementById('st-total').textContent='$'+money(tableTotal());
+  document.getElementById('st-people').textContent=present+'/'+state.people.length;
+  document.getElementById('st-items').textContent=state.orders.reduce((s,o)=>s+o.qty,0);
+  document.getElementById('clock').textContent=mvd();
+}
+
+/* ── render: people ── */
+function render(){
+  const host=document.getElementById('people');
+  const active=document.activeElement;
+  const keepId=active&&active.classList.contains('name-input')?active.dataset.pid:null;
+  const caret=keepId?active.selectionStart:null;
+  host.innerHTML=state.people.map(cardHTML).join('');
+  if(keepId){const el=host.querySelector('.name-input[data-pid="'+keepId+'"]');if(el){el.focus();try{el.setSelectionRange(caret,caret);}catch(e){}}}
+  renderStats();
+  renderMenu();
+}
+
+function cardHTML(p){
+  const open=state.expanded===p.id, here=!p.leftAt, tot=personTotal(p.id);
+  const myOrders=state.orders.filter(o=>o.people.includes(p.id));
+  const lines = myOrders.length ? myOrders.map(o=>lineHTML(o,p.id)).join('')
+    : '<div class="empty">Sin consumos todavía</div>';
+  const chips = state.products.map(pr=>
+    '<button class="chip" onclick="quickAdd('+p.id+','+pr.id+')">'+esc(pr.emoji||'•')+' '+esc(pr.name)+' <span class="p">$'+money(pr.price)+'</span></button>'
+  ).join('')+'<button class="chip add-new" onclick="showView(\'menu\')">+ producto</button>';
+
+  return '<div class="card'+(open?' open':'')+(here?'':' away')+'">'+
+    '<div class="card-head">'+
+      '<span class="avatar" style="background:'+avColor(p.id)+'">'+esc(initials(p.name,p.num))+'</span>'+
+      '<input class="name-input" data-pid="'+p.id+'" value="'+esc(p.name)+'" placeholder="Persona '+p.num+'" oninput="rename('+p.id+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">'+
+      '<div class="head-right">'+
+        '<span class="person-total mono">$'+money(tot)+'</span>'+
+        '<button class="expand-btn" aria-label="Ver detalle" onclick="toggle('+p.id+')"><svg class="chevron" width="13" height="13" viewBox="0 0 12 12"><polyline points="2,4 6,8 10,4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="timer-line">'+
+      '<span class="dot '+(here?'on':'off')+'"></span>'+
+      '<span class="timer mono" data-timer="'+p.id+'">'+fmtTime(elapsed(p))+'</span>'+
+      (here?'':'<span class="timer"> · se fue '+mvd(p.leftAt)+'</span>')+
+    '</div>'+
+    '<div class="card-body"><div class="body-inner">'+
+      '<div class="lines">'+lines+'</div>'+
+      '<div class="qa-label">Agregar consumo</div>'+
+      '<div class="chips">'+chips+'</div>'+
+      '<div class="card-actions">'+
+        '<button class="mini-btn leave'+(here?'':' is-away')+'" onclick="toggleLeave('+p.id+')">'+(here?'Se fue':'Volvió')+'</button>'+
+        '<button class="mini-btn danger" onclick="removePerson('+p.id+')">Quitar</button>'+
+      '</div>'+
+    '</div></div>'+
+  '</div>';
+}
+
+function lineHTML(o,pid){
+  const shared=o.people.length>1, share=personShare(o,pid);
+  return '<div class="line">'+
+    '<div class="line-main">'+
+      '<span class="line-name">'+esc(o.name)+'</span>'+
+      (shared?'<span class="line-tag">compartida entre '+o.people.length+' · $'+money(o.unitPrice*o.qty)+'</span>':'')+
+    '</div>'+
+    (shared
+      ? '<span class="qty mono">×'+o.qty+'</span>'
+      : '<div class="stepper"><button class="step-btn" onclick="stepQty('+o.id+',-1)">−</button><span class="qty mono">'+o.qty+'</span><button class="step-btn" onclick="stepQty('+o.id+',1)">+</button></div>')+
+    '<span class="line-price mono">$'+money(share)+'</span>'+
+    '<button class="line-x" aria-label="Quitar" onclick="removeFromOrder('+o.id+','+pid+')">×</button>'+
+  '</div>';
+}
+
+/* ── render: menu ── */
+function renderMenu(){
+  const host=document.getElementById('menu-list');
+  if(!host) return;
+  host.innerHTML=state.products.map(pr=>
+    '<div class="prod-row">'+
+      '<span class="prod-emoji">'+esc(pr.emoji||'🍽️')+'</span>'+
+      '<input class="prod-name" value="'+esc(pr.name)+'" oninput="editProdName('+pr.id+',this.value)">'+
+      '<div class="price-wrap"><span class="cur">$</span><input class="prod-price mono" type="number" step="any" min="0" value="'+(pr.price||'')+'" placeholder="0" oninput="editProdPrice('+pr.id+',this.value)"></div>'+
+      '<button class="prod-del" aria-label="Eliminar" onclick="delProduct('+pr.id+')">×</button>'+
+    '</div>'
+  ).join('') || '<div class="empty">Sin productos. Agregá abajo.</div>';
+}
+
+/* ── timers ── */
+function elapsed(p){return p.leftAt? p.accumulatedMs : p.accumulatedMs+(Date.now()-p.arrivedAt);}
+function tick(){
+  state.people.forEach(p=>{if(!p.leftAt){const el=document.querySelector('[data-timer="'+p.id+'"]');if(el)el.textContent=fmtTime(elapsed(p));}});
+  renderStats();
+}
+
+/* ── people actions ── */
+function mkPerson(name){return {id:uid(),num:nextNum(),name:name||'',arrivedAt:Date.now(),leftAt:null,accumulatedMs:0};}
+function nextNum(){return state.people.length? Math.max(...state.people.map(p=>p.num||0))+1 : 1;}
+function rename(id,v){const p=state.people.find(x=>x.id===id);if(!p)return;p.name=v;save();
+  const inp=document.querySelector('.name-input[data-pid="'+id+'"]');
+  if(inp){const a=inp.previousElementSibling;if(a&&a.classList.contains('avatar'))a.textContent=initials(v,p.num);}}
+function toggle(id){state.expanded=state.expanded===id?null:id;save();render();}
+function toggleLeave(id){const p=state.people.find(x=>x.id===id);if(!p)return;
+  if(p.leftAt){p.arrivedAt=Date.now();p.leftAt=null;}else{p.accumulatedMs+=Date.now()-p.arrivedAt;p.leftAt=Date.now();}
+  save();render();}
+function addPerson(){state.people.push(mkPerson(''));save();render();
+  requestAnimationFrame(()=>{const inps=document.querySelectorAll('.name-input');const last=inps[inps.length-1];if(last){last.focus();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}});}
+function removePerson(id){const p=state.people.find(x=>x.id===id);if(!p)return;
+  const dn=p.name||('Persona '+p.num);
+  if(!confirm('¿Quitar a '+dn+'? Se le sacan sus consumos.'))return;
+  state.orders.forEach(o=>{o.people=o.people.filter(x=>x!==id);});
+  state.orders=state.orders.filter(o=>o.people.length>0);
+  state.people=state.people.filter(x=>x.id!==id);
+  if(state.expanded===id)state.expanded=null;
+  save();render();}
+
+/* ── order actions ── */
+/* ── Confirmación con resumen ── */
+let _confirmYes=null;
+function askConfirm(html,onYes){
+  _confirmYes=onYes;
+  document.getElementById('confirmBox').innerHTML=html+
+    '<div class="cf-actions">'+
+      '<button class="cf-btn no" onclick="closeConfirm()">Cancelar</button>'+
+      '<button class="cf-btn yes" onclick="okConfirm()">Confirmar</button>'+
+    '</div>';
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('show');_confirmYes=null;}
+function okConfirm(){const f=_confirmYes;closeConfirm();if(f)f();}
+function pname(id){const p=state.people.find(x=>x.id===id);return p?(p.name||('Persona '+p.num)):'?';}
+
+function quickAdd(pid,prodId){
+  const pr=state.products.find(x=>x.id===prodId);if(!pr)return;
+  const ex=state.orders.find(o=>o.people.length===1&&o.people[0]===pid&&o.name===pr.name&&o.unitPrice===pr.price);
+  const nextQty=ex?ex.qty+1:1;
+  const html='<h3>¿Cargar este ítem?</h3><div class="cf-sub">Revisá antes de sumarlo a la cuenta.</div>'+
+    '<div class="cf-item"><span class="cf-emoji">'+esc(pr.emoji||'🍽️')+'</span>'+
+      '<div class="cf-main"><div class="cf-title">'+esc(pr.name)+'</div>'+
+        '<div class="cf-desc">para '+esc(pname(pid))+(ex?' · pasa a llevar '+nextQty:'')+'</div></div>'+
+      '<span class="cf-amount">+$'+money(pr.price)+'</span></div>'+
+    '<div class="cf-total"><span>Suma a '+esc(pname(pid))+'</span><b>$'+money(pr.price)+'</b></div>';
+  askConfirm(html,function(){
+    if(ex)ex.qty++; else state.orders.push({id:uid(),name:pr.name,unitPrice:pr.price,qty:1,people:[pid]});
+    save();render();
+    toast(pr.name+' → '+pname(pid));
+  });
+}
+function stepQty(oid,d){const o=state.orders.find(x=>x.id===oid);if(!o)return;
+  o.qty+=d; if(o.qty<=0){state.orders=state.orders.filter(x=>x.id!==oid);} save();render();}
+function removeFromOrder(oid,pid){const o=state.orders.find(x=>x.id===oid);if(!o)return;
+  o.people=o.people.filter(x=>x!==pid);
+  if(o.people.length===0)state.orders=state.orders.filter(x=>x.id!==oid);
+  save();render();}
+
+/* ── products (menu) ── */
+function pickEmoji(name){
+  const n=(name||'').toLowerCase();
+  const map={verm:'🍷',pizza:'🍕',fain:'🥖',cerv:'🍺',birra:'🍺',agua:'🥤',refr:'🥤',cok:'🥤',papa:'🍟',fri:'🍟',carne:'🥩',asad:'🥩',chiv:'🥩',queso:'🧀',pan:'🍞',caf:'☕',gin:'🍸',vino:'🍷',champ:'🥂',pancho:'🌭',hamb:'🍔',aceit:'🫒'};
+  for(const k in map){if(n.includes(k))return map[k];}
+  return EMOJI[Math.floor(Math.random()*EMOJI.length)];
+}
+function addProduct(e){e.preventDefault();const f=e.target;
+  const name=f.querySelector('.n').value.trim();const price=parseFloat(f.querySelector('.pr').value);
+  if(!name||isNaN(price)||price<0)return;
+  state.products.push({id:uid(),name,price,emoji:pickEmoji(name)});
+  f.reset();save();renderMenu();render();f.querySelector('.n').focus();}
+function editProdName(id,v){const pr=state.products.find(x=>x.id===id);if(pr){pr.name=v;save();renderChipsOnly();}}
+function editProdPrice(id,v){const pr=state.products.find(x=>x.id===id);if(pr){pr.price=v===''?0:parseFloat(v)||0;save();renderChipsOnly();}}
+function renderChipsOnly(){/* refresh mesa chips without disturbing menu inputs */
+  if(state.view==='mesa')render();}
+function delProduct(id){const pr=state.products.find(x=>x.id===id);if(!pr)return;
+  if(!confirm('¿Eliminar "'+pr.name+'" del menú? (No borra consumos ya cargados)'))return;
+  state.products=state.products.filter(x=>x.id!==id);save();renderMenu();render();}
+
+/* ── cargar a la mesa (producto primero) ── */
+let sh={prodId:null,mode:'ind',qty:1,people:[],counts:{}};
+function openLoad(){
+  if(state.products.length===0){showView('menu');setTimeout(()=>alert('Primero cargá productos en el Menú.'),50);return;}
+  if(state.people.length===0){alert('Agregá personas primero (botón + Persona).');return;}
+  sh={prodId:state.products[0].id,mode:'ind',qty:1,people:state.people.map(p=>p.id),counts:{}};
+  drawSheet();document.getElementById('overlay').classList.add('show');
+}
+function closeSheet(){document.getElementById('overlay').classList.remove('show');}
+function curProd(){return state.products.find(x=>x.id===sh.prodId)||state.products[0];}
+function indQty(pid,prod){const o=state.orders.find(x=>x.people.length===1&&x.people[0]===pid&&x.name===prod.name&&x.unitPrice===prod.price);return o?o.qty:0;}
+
+function drawSheet(){
+  const prod=curProd();
+  const noPrice=!(prod.price>0);
+  const prodChips=state.products.map(pr=>
+    '<button class="pick'+(pr.id===sh.prodId?' sel':'')+'" onclick="shPick('+pr.id+')">'+esc(pr.emoji||'•')+' '+esc(pr.name)+' <span class="ind-sub">$'+money(pr.price)+'</span></button>'
+  ).join('');
+  const seg=
+    '<div class="seg">'+
+      '<button class="'+(sh.mode==='ind'?'on':'')+'" onclick="shMode(\'ind\')">Cada uno lo suyo</button>'+
+      '<button class="'+(sh.mode==='shared'?'on':'')+'" onclick="shMode(\'shared\')">Compartido</button>'+
+    '</div>';
+
+  let body='', preview='', canConfirm=false;
+
+  if(sh.mode==='ind'){
+    const rows=state.people.map(p=>{
+      const c=sh.counts[p.id]||0, has=indQty(p.id,prod), gone=!!p.leftAt;
+      return '<div class="ind-row'+(gone?' gone':'')+'">'+
+        '<span class="pav" style="background:'+avColor(p.id)+'">'+esc(initials(p.name,p.num))+'</span>'+
+        '<span class="ind-name">'+esc(p.name||('Persona '+p.num))+(has?' <span class="ind-sub">lleva '+has+'</span>':'')+'</span>'+
+        '<div class="ind-step">'+
+          '<button onclick="shCount('+p.id+',-1)"'+(c<=0?' disabled':'')+'>−</button>'+
+          '<span class="ind-count'+(c<=0?' zero':'')+' mono">'+c+'</span>'+
+          '<button onclick="shCount('+p.id+',1)">+</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    body='<button class="ronda-btn" onclick="shRonda()">🍻 Ronda: +1 a todos</button>'+
+         '<div class="ind-list">'+rows+'</div>';
+    const units=Object.values(sh.counts).reduce((s,n)=>s+(n>0?n:0),0);
+    canConfirm=units>0&&!noPrice;
+    preview='<div class="share-preview"><span>'+units+' unidad'+(units===1?'':'es')+' para '+Object.values(sh.counts).filter(n=>n>0).length+' persona(s)</span><span>total <b>$'+money(prod.price*units)+'</b></span></div>';
+  } else {
+    const peoplePick=state.people.map(p=>
+      '<button class="pick'+(sh.people.includes(p.id)?' sel':'')+'" onclick="shTogglePerson('+p.id+')">'+
+        '<span class="pav" style="background:'+avColor(p.id)+'">'+esc(initials(p.name,p.num))+'</span>'+esc(p.name||('Persona '+p.num))+
+      '</button>'
+    ).join('');
+    const allSel=sh.people.length===state.people.length;
+    const total=prod.price*sh.qty, per=sh.people.length?total/sh.people.length:0;
+    body='<div class="field-label">Cantidad</div>'+
+      '<div class="qty-big"><button onclick="shQty(-1)">−</button><span class="n mono">'+sh.qty+'</span><button onclick="shQty(1)">+</button></div>'+
+      '<div class="field-label">¿Entre quiénes?</div>'+
+      '<div class="people-pick">'+peoplePick+'</div>'+
+      '<button class="pick-all" onclick="shAll()">'+(allSel?'Ninguno':'Seleccionar todos')+'</button>';
+    canConfirm=sh.people.length>0&&!noPrice;
+    preview='<div class="share-preview"><span>'+sh.people.length+' persona'+(sh.people.length===1?'':'s')+' · total $'+money(total)+'</span><span>c/u <b>$'+money(per)+'</b></span></div>';
+  }
+
+  const priceWarn=noPrice?'<div class="share-preview" style="color:var(--accent)"><span>Este producto no tiene precio.</span><button class="pick-all" style="color:var(--accent);margin:0" onclick="closeSheet();showView(\'menu\')">Ponelo en el Menú →</button></div>':'';
+
+  document.getElementById('sheet').innerHTML=
+    '<div class="grabber"></div>'+
+    '<h2>Cargar a la mesa</h2>'+
+    '<p class="desc">Elegí el producto una vez y repartilo entre la mesa, sin escribir.</p>'+
+    '<div class="field-label">Producto</div>'+
+    '<div class="people-pick">'+prodChips+'</div>'+
+    '<div class="field-label">¿Cómo se reparte?</div>'+seg+
+    '<div style="margin-top:14px">'+body+'</div>'+
+    priceWarn+preview+
+    '<div class="sheet-actions">'+
+      '<button class="sheet-btn cancel" onclick="closeSheet()">Listo</button>'+
+      '<button class="sheet-btn confirm" '+(canConfirm?'':'disabled')+' onclick="confirmLoad()">Agregar</button>'+
+    '</div>';
+}
+function shPick(id){sh.prodId=id;sh.counts={};drawSheet();}
+function shMode(m){sh.mode=m;drawSheet();}
+function shCount(pid,d){const c=(sh.counts[pid]||0)+d;sh.counts[pid]=c<0?0:c;drawSheet();}
+function shRonda(){state.people.forEach(p=>{if(!p.leftAt)sh.counts[p.id]=(sh.counts[p.id]||0)+1;});drawSheet();}
+function shQty(d){sh.qty=Math.max(1,sh.qty+d);drawSheet();}
+function shTogglePerson(id){sh.people.includes(id)?sh.people=sh.people.filter(x=>x!==id):sh.people.push(id);drawSheet();}
+function shAll(){sh.people=sh.people.length===state.people.length?[]:state.people.map(p=>p.id);drawSheet();}
+function addIndividual(pid,prod,n){
+  const ex=state.orders.find(o=>o.people.length===1&&o.people[0]===pid&&o.name===prod.name&&o.unitPrice===prod.price);
+  if(ex)ex.qty+=n; else state.orders.push({id:uid(),name:prod.name,unitPrice:prod.price,qty:n,people:[pid]});
+}
+function confirmLoad(){
+  const prod=curProd();
+  if(!(prod.price>0))return;
+  const emoji=esc(prod.emoji||'🍽️');
+  if(sh.mode==='ind'){
+    const entries=Object.keys(sh.counts).map(pid=>[+pid,sh.counts[pid]]).filter(e=>e[1]>0);
+    if(!entries.length)return;
+    const units=entries.reduce((s,e)=>s+e[1],0), total=prod.price*units;
+    const rows=entries.map(e=>'<div class="cf-people">• '+esc(pname(e[0]))+' ×'+e[1]+' <span class="ind-sub">($'+money(prod.price*e[1])+')</span></div>').join('');
+    const html='<h3>¿Cargar esta ronda?</h3><div class="cf-sub">Cada uno lo suyo — revisá el detalle.</div>'+
+      '<div class="cf-item"><span class="cf-emoji">'+emoji+'</span>'+
+        '<div class="cf-main"><div class="cf-title">'+esc(prod.name)+'</div>'+
+          '<div class="cf-desc">'+units+' unidad'+(units===1?'':'es')+' · $'+money(prod.price)+' c/u</div></div></div>'+
+      rows+
+      '<div class="cf-total"><span>Total de la ronda</span><b>$'+money(total)+'</b></div>';
+    askConfirm(html,function(){
+      entries.forEach(e=>addIndividual(e[0],prod,e[1]));
+      sh.counts={}; save();render();drawSheet();
+      toast('Cargado: '+prod.name+' ×'+units);
+    });
+  } else {
+    if(sh.people.length===0)return;
+    const total=prod.price*sh.qty, per=total/sh.people.length;
+    const names=sh.people.map(pname).join(', ');
+    const html='<h3>¿Cargar compartido?</h3><div class="cf-sub">Dividido en partes iguales.</div>'+
+      '<div class="cf-item"><span class="cf-emoji">'+emoji+'</span>'+
+        '<div class="cf-main"><div class="cf-title">'+esc(prod.name)+' ×'+sh.qty+'</div>'+
+          '<div class="cf-desc">entre '+sh.people.length+' persona'+(sh.people.length===1?'':'s')+'</div></div>'+
+        '<span class="cf-amount">$'+money(total)+'</span></div>'+
+      '<div class="cf-people">'+esc(names)+'</div>'+
+      '<div class="cf-total"><span>Le toca a c/u</span><b>$'+money(per)+'</b></div>';
+    askConfirm(html,function(){
+      state.orders.push({id:uid(),name:prod.name,unitPrice:prod.price,qty:sh.qty,people:sh.people.slice()});
+      sh.qty=1; save();render();drawSheet();
+      toast('Compartido cargado: '+prod.name);
+    });
+  }
+}
+
+/* ── views ── */
+function showView(v){
+  state.view=v;save();
+  document.getElementById('view-mesa').classList.toggle('active',v==='mesa');
+  document.getElementById('view-menu').classList.toggle('active',v==='menu');
+  document.getElementById('nav-mesa').classList.toggle('active',v==='mesa');
+  document.getElementById('nav-menu').classList.toggle('active',v==='menu');
+  if(v==='menu')renderMenu(); else render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetAll(){
+  const msg=cloud?'¿Reiniciar esta mesa online? Se borra para TODOS (personas, consumos y precios).':'¿Reiniciar todo? Se borran personas, consumos y precios.';
+  if(!confirm(msg))return;
+  state={products:[],people:[],orders:[],expanded:null,view:'mesa'};
+  seedProducts();
+  for(let i=0;i<8;i++)state.people.push(mkPerson(''));
+  if(!cloud){try{localStorage.removeItem('ronda-v3');localStorage.removeItem('ronda-v2');}catch(e){}}
+  save();showView('mesa');render();
+}
+
+/* ══════════════ NUBE (Supabase) ══════════════ */
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function persistCloud(){try{cloud?localStorage.setItem('ronda-event',JSON.stringify(cloud)):localStorage.removeItem('ronda-event');}catch(e){}}
+function updateCloudBar(status){
+  const bar=document.getElementById('cloudBar'),lab=document.getElementById('cloudLabel'),code=document.getElementById('cloudCode');
+  if(!bar)return; bar.classList.remove('on','err');
+  if(!cloud){lab.textContent=sb?'Solo en este teléfono — tocá para sincronizar':'Solo en este teléfono';code.textContent='';return;}
+  code.textContent=cloud.code;
+  if(status==='err'){bar.classList.add('err');lab.textContent='Mesa online — sin conexión';}
+  else{bar.classList.add('on');lab.textContent='Mesa online — en vivo';}
+}
+function genCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=A[Math.floor(Math.random()*A.length)];return s;}
+
+function schedulePush(){clearTimeout(pushT);pushT=setTimeout(pushAll,250);}
+function schedulePull(){clearTimeout(pullT);pullT=setTimeout(pullAll,300);}
+function startPoll(){if(pollT)clearInterval(pollT);pollT=setInterval(()=>{if(cloud)pullAll();},6000);}
+
+async function delMissing(table,ev,ids){
+  let q=sb.from(table).delete().eq('event_id',ev);
+  if(ids.length)q=q.not('local_id','in','('+ids.join(',')+')');
+  await q;
+}
+async function pushAll(){
+  if(!sb||!cloud)return;
+  const ev=cloud.eventId;
+  try{
+    const P=state.people.map((p,i)=>({event_id:ev,local_id:p.id,num:p.num,name:p.name||'',arrived_at:new Date(p.arrivedAt).toISOString(),left_at:p.leftAt?new Date(p.leftAt).toISOString():null,accumulated_ms:Math.round(p.accumulatedMs||0),sort:i}));
+    const PR=state.products.map((p,i)=>({event_id:ev,local_id:p.id,name:p.name||'',price:Number(p.price)||0,emoji:p.emoji||null,sort:i}));
+    const O=state.orders.map(o=>({event_id:ev,local_id:o.id,name:o.name||'',unit_price:Number(o.unitPrice)||0,qty:o.qty,people_ids:o.people}));
+    if(P.length) await sb.from('ronda_people').upsert(P,{onConflict:'event_id,local_id'});
+    if(PR.length)await sb.from('ronda_products').upsert(PR,{onConflict:'event_id,local_id'});
+    if(O.length) await sb.from('ronda_orders').upsert(O,{onConflict:'event_id,local_id'});
+    await delMissing('ronda_people',ev,state.people.map(p=>p.id));
+    await delMissing('ronda_products',ev,state.products.map(p=>p.id));
+    await delMissing('ronda_orders',ev,state.orders.map(o=>o.id));
+    await sb.from('ronda_events').update({updated_at:new Date().toISOString()}).eq('id',ev);
+    lastPush=Date.now(); updateCloudBar('ok');
+  }catch(e){ updateCloudBar('err'); }
+}
+async function pullAll(){
+  if(!sb||!cloud)return;
+  const a=document.activeElement;
+  if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')){schedulePull();return;} // no pisar edición en curso
+  try{
+    const ev=cloud.eventId;
+    const [pe,pr,or]=await Promise.all([
+      sb.from('ronda_people').select('*').eq('event_id',ev),
+      sb.from('ronda_products').select('*').eq('event_id',ev),
+      sb.from('ronda_orders').select('*').eq('event_id',ev)
+    ]);
+    if(pe.error||pr.error||or.error)throw(pe.error||pr.error||or.error);
+    applyingRemote=true;
+    state.people=(pe.data||[]).sort((a,b)=>(a.sort-b.sort)).map(r=>({id:Number(r.local_id),num:r.num,name:r.name||'',arrivedAt:new Date(r.arrived_at).getTime(),leftAt:r.left_at?new Date(r.left_at).getTime():null,accumulatedMs:Number(r.accumulated_ms)||0}));
+    state.products=(pr.data||[]).sort((a,b)=>(a.sort-b.sort)).map(r=>({id:Number(r.local_id),name:r.name||'',price:Number(r.price)||0,emoji:r.emoji}));
+    state.orders=(or.data||[]).map(r=>({id:Number(r.local_id),name:r.name||'',unitPrice:Number(r.unit_price)||0,qty:r.qty,people:(r.people_ids||[]).map(Number)}));
+    save(); applyingRemote=false;
+    render(); if(state.view==='menu')renderMenu();
+    updateCloudBar('ok');
+  }catch(e){ applyingRemote=false; updateCloudBar('err'); }
+}
+function subscribeRealtime(){
+  if(!sb||!cloud)return;
+  if(rtChannel){try{sb.removeChannel(rtChannel);}catch(e){} rtChannel=null;}
+  const f='event_id=eq.'+cloud.eventId;
+  rtChannel=sb.channel('ronda-'+cloud.code)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ronda_people',filter:f},onRemote)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ronda_products',filter:f},onRemote)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ronda_orders',filter:f},onRemote)
+    .subscribe();
+}
+function onRemote(){ if(Date.now()-lastPush<1200)return; schedulePull(); }
+
+async function createEvent(){
+  if(!sb){toast('Abrí la app desde el link online');return;}
+  toast('Creando mesa…');
+  for(let attempt=0;attempt<5;attempt++){
+    const code=genCode();
+    const {data,error}=await sb.from('ronda_events').insert({code}).select().single();
+    if(error){ if(error.code==='23505')continue; toast('Error: '+(error.message||'no se pudo')); return; }
+    cloud={code,eventId:data.id}; persistCloud(); rememberMesa(code);
+    lastPush=0; await pushAll();           // sube lo que ya tenías cargado
+    try{location.hash='m='+code;}catch(e){}
+    subscribeRealtime(); startPoll(); updateCloudBar('ok'); drawCloud(); render();
+    toast('¡Mesa '+code+' creada!');
+    return;
+  }
+  toast('No se pudo generar un código, probá de nuevo');
+}
+async function joinEvent(code,silent){
+  if(!sb){updateCloudBar();return;}
+  code=(code||'').trim().toUpperCase(); if(!code)return;
+  try{
+    const {data,error}=await sb.from('ronda_events').select('*').eq('code',code).maybeSingle();
+    if(error)throw error;
+    if(!data){ if(!silent)toast('No existe la mesa '+code); return; }
+    cloud={code,eventId:data.id}; persistCloud(); rememberMesa(code);
+    try{location.hash='m='+code;}catch(e){}
+    await pullAll(); subscribeRealtime(); startPoll(); updateCloudBar('ok');
+    if(!silent){drawCloud();toast('Conectado a la mesa '+code);}
+  }catch(e){ updateCloudBar('err'); if(!silent)toast('No se pudo conectar'); }
+}
+function joinFromInput(){const el=document.getElementById('joinCode');if(el)joinEvent(el.value);}
+
+/* ── Mesas recientes ── */
+function loadRecent(){try{return JSON.parse(localStorage.getItem('ronda-recent')||'[]');}catch(e){return [];}}
+function saveRecent(list){try{localStorage.setItem('ronda-recent',JSON.stringify(list.slice(0,10)));}catch(e){}}
+function rememberMesa(code){
+  if(!code)return;
+  const list=loadRecent().filter(function(m){return m.code!==code;});
+  list.unshift({code:code,at:Date.now()});
+  saveRecent(list);
+}
+
+/* ── Nueva mesa (registro nuevo, deja la anterior intacta) ── */
+function newMesaFlow(keepProducts){
+  toast('Creando mesa nueva…');
+  createFreshMesa(keepProducts);
+}
+async function createFreshMesa(keepProducts){
+  if(!sb){toast('Abrí la app desde el link online');return;}
+  const prevProducts=keepProducts? state.products.map(function(p){return {id:uid(),name:p.name,price:p.price,emoji:p.emoji};}) : [];
+  // Reset local state; NO tocamos la mesa anterior en la nube (queda con su código)
+  if(rtChannel){try{sb.removeChannel(rtChannel);}catch(e){}rtChannel=null;}
+  if(pollT){clearInterval(pollT);pollT=null;}
+  cloud=null; state={products:prevProducts.length?prevProducts:[],people:[],orders:[],expanded:null,view:'mesa'};
+  if(!prevProducts.length)seedProducts();
+  for(let i=0;i<8;i++)state.people.push(mkPerson(''));
+  save();
+  for(let attempt=0;attempt<5;attempt++){
+    const code=genCode();
+    const {data,error}=await sb.from('ronda_events').insert({code}).select().single();
+    if(error){if(error.code==='23505')continue; toast('Error: '+(error.message||'no se pudo')); render(); drawCloud(); return;}
+    cloud={code:code,eventId:data.id}; persistCloud(); rememberMesa(code);
+    lastPush=0; await pushAll();
+    try{location.hash='m='+code;}catch(e){}
+    subscribeRealtime(); startPoll(); updateCloudBar('ok');
+    render(); drawCloud(); toast('¡Mesa '+code+' lista!');
+    return;
+  }
+  toast('No se pudo generar un código, probá de nuevo');
+}
+function askNewMesa(){
+  const hasStuff=state.people.some(function(p){return p.name;})||state.orders.length>0;
+  const cur=cloud?' La mesa actual <b>'+esc(cloud.code)+'</b> queda intacta — la podés recuperar por su código.':'';
+  const html='<h3>¿Empezar una mesa nueva?</h3>'+
+    '<div class="cf-sub">Se crea una <b>mesa nueva</b> con código propio, desde cero.'+cur+'</div>';
+  askConfirm(html,function(){
+    const keep=state.products.some(function(p){return p.price>0;})&&hasStuff
+      ? confirm('¿Copiar el menú de productos (con precios) a la mesa nueva?\n\nOK = sí, copiar\nCancelar = arrancar con el menú por defecto')
+      : false;
+    newMesaFlow(keep);
+  });
+}
+function leaveCloud(){
+  if(rtChannel){try{sb.removeChannel(rtChannel);}catch(e){}rtChannel=null;}
+  if(pollT){clearInterval(pollT);pollT=null;}
+  cloud=null; persistCloud();
+  try{location.hash='';}catch(e){}
+  updateCloudBar(); drawCloud(); toast('Desconectado — sigue guardado en este teléfono');
+}
+function copyLink(){
+  const link=location.origin+location.pathname+'#m='+(cloud?cloud.code:'');
+  copyText(link,'Link copiado');
+}
+function copyText(txt,ok){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast(ok||'Copiado')).catch(()=>prompt('Copiá esto:',txt));
+  } else { prompt('Copiá esto:',txt); }
+}
+function exportData(){
+  const blob=JSON.stringify({v:3,people:state.people,products:state.products,orders:state.orders});
+  copyText(blob,'Copia de seguridad copiada');
+}
+function importPrompt(){
+  const txt=prompt('Pegá acá la copia de seguridad (el texto que exportaste):');
+  if(!txt)return;
+  try{
+    const d=JSON.parse(txt);
+    if(!d||!Array.isArray(d.people))throw 0;
+    state.people=d.people; state.products=d.products||[]; state.orders=d.orders||[]; state.expanded=null;
+    save(); render(); renderMenu(); closeSheet(); toast('Datos importados');
+  }catch(e){ toast('No pude leer esa copia'); }
+}
+function openCloud(){drawCloud();document.getElementById('overlay').classList.add('show');}
+function drawCloud(){
+  const joinBox='<div class="add-prod" style="margin-top:8px;padding:8px">'+
+    '<input id="joinCode" class="n" placeholder="Código (ej: 4F7K)" autocomplete="off" style="text-transform:uppercase">'+
+    '<button type="button" style="width:auto;padding:0 16px;font-size:14px" onclick="joinFromInput()">Unirme</button></div>';
+  let h='<div class="grabber"></div><h2>Sincronizar la mesa</h2>';
+  if(!sb) h+='<p class="desc" style="color:var(--accent)">Esta vista no puede conectarse a la base. Abrí la app desde el <b>link online</b> (GitHub), no desde la vista previa.</p>';
+  const recent=loadRecent().filter(function(m){return !cloud||m.code!==cloud.code;});
+  const recentBox=recent.length? '<div class="field-label">Mesas recientes</div><div class="recent-list">'+recent.slice(0,6).map(function(m){
+    return '<button class="recent-row" onclick="joinEvent(\''+esc(m.code)+'\')"><span class="mono" style="font-weight:700;letter-spacing:1.5px">'+esc(m.code)+'</span><span style="font-size:11px;color:var(--text-2)">'+esc(histDate(new Date(m.at).toISOString()))+'</span></button>';
+  }).join('')+'</div>' : '';
+
+  if(cloud){
+    h+='<p class="desc">Mesa online: todos los que tengan el código ven y editan lo mismo, en vivo.</p>'+
+       '<div class="cloud-code-big mono">'+esc(cloud.code)+'</div>'+
+       '<div class="sheet-actions" style="margin-top:12px"><button class="sheet-btn confirm" onclick="copyLink()">Copiar link para compartir</button></div>'+
+       '<div class="sheet-actions" style="margin-top:9px"><button class="sheet-btn confirm" style="background:var(--active)" onclick="askNewMesa()">＋ Nueva mesa (código nuevo)</button></div>'+
+       '<div class="field-label">Volver a otra mesa</div>'+joinBox+recentBox+
+       '<button class="pick-all" onclick="leaveCloud()" style="color:var(--text-2)">Desconectar de esta mesa</button>';
+  } else {
+    h+='<p class="desc">Guardá esta mesa en la nube para no perderla y compartirla con los demás en vivo. Se sube lo que ya tenés cargado.</p>'+
+       '<button class="sheet-btn confirm" style="width:100%" onclick="createEvent()">Crear mesa online y subir lo cargado</button>'+
+       '<div class="sheet-actions" style="margin-top:9px"><button class="sheet-btn confirm" style="background:var(--active)" onclick="askNewMesa()">＋ Mesa nueva desde cero</button></div>'+
+       '<div class="field-label">¿Ya tenés un código?</div>'+joinBox+recentBox;
+  }
+  h+='<div class="field-label">Historial</div>'+
+     '<button class="sheet-btn cancel" style="width:100%" onclick="openHistory()">📖 Ver historial de cierres</button>'+
+     '<div class="field-label">Copia de seguridad (sin internet)</div>'+
+     '<div class="sheet-actions" style="margin-top:0">'+
+       '<button class="sheet-btn cancel" style="flex:1" onclick="exportData()">Exportar</button>'+
+       '<button class="sheet-btn cancel" style="flex:1" onclick="importPrompt()">Importar</button></div>'+
+     '<div class="sheet-actions"><button class="sheet-btn cancel" style="flex:1" onclick="closeSheet()">Cerrar</button></div>';
+  document.getElementById('sheet').innerHTML=h;
+}
+
+/* ══════════════ LIQUIDACIÓN ══════════════ */
+let settleTip=0, settleOverride=null;
+function openSettle(){
+  if(state.people.length===0){toast('No hay nadie en la mesa');return;}
+  settleTip=0; settleOverride=null; drawSettle(); document.getElementById('overlay').classList.add('show');
+}
+function setTip(t){settleTip=t;drawSettle();}
+function settleBase(){return (settleOverride&&settleOverride>0)? settleOverride : tableTotal();}
+function settleGrand(){return settleBase()*(1+settleTip/100);}
+function applyOverride(v){
+  const n=parseFloat(String(v).replace(',','.'));
+  settleOverride=(!isNaN(n)&&n>0)? n : null;
+  drawSettle();
+}
+function clearOverride(){settleOverride=null;drawSettle();}
+function settleRows(){
+  const base=tableTotal(), grand=settleGrand();
+  return state.people.map(function(p){
+    const pct=base>0? personTotal(p.id)/base : 0;
+    return {p:p, pct:pct, amt:pct*grand};
+  }).sort(function(a,b){return b.amt-a.amt;});
+}
+function prodEmoji(name){const pr=state.products.find(function(x){return x.name===name;});return pr&&pr.emoji?pr.emoji:'🍽️';}
+function billLines(){
+  const map={};
+  state.orders.forEach(function(o){
+    const k=o.name+'|'+o.unitPrice;
+    if(!map[k])map[k]={name:o.name,price:o.unitPrice,qty:0,sub:0,emoji:prodEmoji(o.name)};
+    map[k].qty+=o.qty; map[k].sub+=o.unitPrice*o.qty;
+  });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.sub-a.sub;});
+}
+function drawSettle(){
+  const grand=settleGrand(), adj=(settleOverride&&settleOverride>0);
+  const rows=settleRows().map(function(r){
+    const p=r.p, z=r.amt<=0;
+    return '<div class="liq-row">'+
+      '<span class="liq-av" style="background:'+avColor(p.id)+'">'+esc(initials(p.name,p.num))+'</span>'+
+      '<div class="liq-main"><div class="liq-name">'+esc(p.name||('Persona '+p.num))+'</div>'+
+        '<div class="liq-time">'+(p.leftAt?'se fue '+mvd(p.leftAt):'en mesa')+' · '+fmtTime(elapsed(p))+'</div></div>'+
+      '<div class="liq-right"><span class="liq-amt'+(z?' zero':'')+'">$'+money(r.amt)+'</span>'+
+        '<span class="liq-pct">'+(r.pct*100).toFixed(1)+'%</span></div>'+
+    '</div>';
+  }).join('');
+  const tipChips=[0,10,15].map(function(t){
+    return '<button class="tip-chip'+(settleTip===t?' on':'')+'" onclick="setTip('+t+')">'+(t===0?'Sin propina':t+'%')+'</button>';
+  }).join('');
+  const bill=billLines().map(function(b){
+    return '<div class="bill-row"><span class="bill-emoji">'+esc(b.emoji)+'</span>'+
+      '<span class="bill-name">'+esc(b.name)+'</span>'+
+      '<span class="bill-qty">×'+b.qty+' · $'+money(b.price)+'</span>'+
+      '<span class="bill-sub">$'+money(b.sub)+'</span></div>';
+  }).join('')||'<div class="empty">Sin consumos</div>';
+
+  const ovRow=
+    '<div class="ov-row">'+
+      '<input type="text" inputmode="decimal" id="ovInput" placeholder="Total real de la boleta" value="'+(adj?money(settleOverride):'')+'" onchange="applyOverride(this.value)">'+
+      (adj?'<button onclick="clearOverride()">Quitar</button>':'<button onclick="applyOverride(document.getElementById(\'ovInput\').value)">Ajustar</button>')+
+    '</div>'+
+    '<div class="ov-note">'+(adj
+      ? 'Repartido por porcentaje para cerrar en $'+money(settleOverride)+(settleTip?' + '+settleTip+'% propina':'')+'.'
+      : 'Si la cuenta no cierra, poné el total real y se reparte por los % de cada uno.')+'</div>';
+
+  document.getElementById('sheet').innerHTML=
+    '<div class="grabber"></div>'+
+    '<h2>Liquidación de la mesa</h2>'+
+    '<p class="desc">Lo que paga cada uno, con su % del total.</p>'+
+    '<div class="tip-label">Propina</div>'+
+    '<div class="tip-row">'+tipChips+'</div>'+
+    '<div class="tip-label">Ajustar al total real (opcional)</div>'+
+    ovRow+
+    '<div class="liq-list">'+rows+'</div>'+
+    '<div class="liq-grand"><span>Total'+(adj?' ajustado':'')+(settleTip?' + propina':'')+'</span><b>$'+money(grand)+'</b></div>'+
+    '<div class="field-label">La cuenta (para cerrar con el mozo)</div>'+
+    '<div class="bill-list">'+bill+'</div>'+
+    '<div class="liq-grand" style="margin-top:8px"><span>Suma de la cuenta</span><b>$'+money(tableTotal())+'</b></div>'+
+    '<div class="sheet-actions" style="margin-top:16px">'+
+      '<button class="sheet-btn confirm" style="background:var(--gold);color:#231c00" onclick="copySummary()">Copiar resumen</button>'+
+    '</div>'+
+    '<div class="sheet-actions" style="margin-top:9px">'+
+      '<button class="sheet-btn cancel" style="flex:1" onclick="openHistory()">📖 Historial</button>'+
+      '<button class="sheet-btn" style="flex:1;background:var(--accent);color:#fff" onclick="askCloseMesa()">Cerrar mesa</button>'+
+    '</div>'+
+    '<div class="reset-line" style="margin-top:10px"><button class="reset-btn" onclick="closeSheet()">Volver sin cerrar</button></div>';
+}
+function copySummary(){
+  const adj=(settleOverride&&settleOverride>0);
+  const lines=settleRows().map(function(r){return (r.p.name||('Persona '+r.p.num))+': $'+money(r.amt)+' ('+(r.pct*100).toFixed(1)+'%)';});
+  const bill=billLines().map(function(b){return b.name+' ×'+b.qty+': $'+money(b.sub);});
+  let txt='🍺 Ronda — Liquidación\n';
+  if(cloud)txt+='Mesa '+cloud.code+'\n';
+  if(settleTip)txt+='(incluye '+settleTip+'% de propina)\n';
+  if(adj)txt+='(ajustado al total real $'+money(settleOverride)+')\n';
+  txt+='Total: $'+money(settleGrand())+'\n————\n'+lines.join('\n');
+  txt+='\n————\nLa cuenta:\n'+bill.join('\n')+'\nSuma: $'+money(tableTotal());
+  copyText(txt,'Resumen copiado');
+}
+function buildClosure(){
+  return {
+    closed_at:new Date().toISOString(),
+    code:cloud?cloud.code:null,
+    total:tableTotal(), grand:settleGrand(), tip:settleTip, override:settleOverride||null,
+    people:settleRows().map(function(r){return {name:r.p.name||('Persona '+r.p.num),num:r.p.num,amt:r.amt,pct:r.pct,ms:elapsed(r.p)};}),
+    bill:billLines().map(function(b){return {name:b.name,qty:b.qty,price:b.price,sub:b.sub,emoji:b.emoji};})
+  };
+}
+async function saveClosure(snap){
+  if(cloud&&sb){
+    try{
+      const {error}=await sb.from('ronda_closures').insert({event_id:cloud.eventId,code:snap.code,closed_at:snap.closed_at,total:snap.total,grand:snap.grand,tip:snap.tip,override:snap.override,data:{people:snap.people,bill:snap.bill}});
+      if(!error)return true;
+    }catch(e){}
+  }
+  try{
+    const h=JSON.parse(localStorage.getItem('ronda-history')||'[]');
+    h.unshift(snap); localStorage.setItem('ronda-history',JSON.stringify(h.slice(0,100)));
+  }catch(e){}
+  return true;
+}
+function askCloseMesa(){
+  const html='<h3>¿Cerrar la mesa?</h3>'+
+    '<div class="cf-sub">Se guarda esta liquidación en el <b>historial</b> y se vacía la mesa (se borran los consumos y se reinician los cronómetros). Las personas y el menú se mantienen.'+(cloud?' Afecta a TODOS en la mesa online.':'')+'</div>';
+  askConfirm(html,async function(){
+    const snap=buildClosure();
+    await saveClosure(snap);
+    state.orders=[];
+    state.people.forEach(function(p){p.arrivedAt=Date.now();p.leftAt=null;p.accumulatedMs=0;});
+    save();render();closeSheet();toast('Mesa cerrada y guardada en el historial');
+  });
+}
+
+/* ── Historial de cierres ── */
+let histCache=[];
+function histDate(iso){try{return new Date(iso).toLocaleString('es-UY',{timeZone:'America/Montevideo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});}catch(e){return iso;}}
+async function loadClosures(){
+  if(cloud&&sb){
+    try{
+      const {data,error}=await sb.from('ronda_closures').select('*').eq('event_id',cloud.eventId).order('closed_at',{ascending:false}).limit(100);
+      if(error)throw error;
+      return (data||[]).map(function(r){return {id:r.id,closed_at:r.closed_at,code:r.code,total:Number(r.total),grand:Number(r.grand),tip:r.tip,override:r.override!=null?Number(r.override):null,people:(r.data&&r.data.people)||[],bill:(r.data&&r.data.bill)||[]};});
+    }catch(e){}
+  }
+  try{return JSON.parse(localStorage.getItem('ronda-history')||'[]');}catch(e){return [];}
+}
+async function openHistory(){
+  document.getElementById('sheet').innerHTML='<div class="grabber"></div><h2>Historial de cierres</h2><p class="desc">Cargando…</p>';
+  document.getElementById('overlay').classList.add('show');
+  histCache=await loadClosures();
+  drawHistory();
+}
+function drawHistory(){
+  const rows=histCache.length? histCache.map(function(c,i){
+    return '<button class="hist-row" onclick="openClosure('+i+')">'+
+      '<div class="hist-main"><div class="hist-date">'+esc(histDate(c.closed_at))+'</div>'+
+        '<div class="hist-sub">'+(c.people?c.people.length:0)+' personas'+(c.tip?' · '+c.tip+'% prop.':'')+(c.override?' · ajustada':'')+'</div></div>'+
+      '<span class="hist-amt">$'+money(c.grand)+'</span>'+
+      '<svg width="12" height="12" viewBox="0 0 12 12" style="color:var(--text-2);flex-shrink:0"><polyline points="4,2 8,6 4,10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+    '</button>';
+  }).join('') : '<div class="empty">Todavía no cerraste ninguna mesa.</div>';
+  document.getElementById('sheet').innerHTML=
+    '<div class="grabber"></div><h2>Historial de cierres</h2>'+
+    '<p class="desc">'+(cloud?'Mesa '+esc(cloud.code)+' · ':'')+'liquidaciones guardadas.</p>'+
+    '<div class="hist-list">'+rows+'</div>'+
+    '<div class="sheet-actions" style="margin-top:16px"><button class="sheet-btn cancel" style="flex:1" onclick="closeSheet()">Cerrar</button></div>';
+}
+function openClosure(i){
+  const c=histCache[i]; if(!c)return;
+  const people=(c.people||[]).slice().sort(function(a,b){return b.amt-a.amt;});
+  const rows=people.map(function(pp){
+    return '<div class="liq-row"><div class="liq-main"><div class="liq-name">'+esc(pp.name)+'</div>'+
+      (pp.ms?'<div class="liq-time">'+fmtTime(pp.ms)+' en mesa</div>':'')+'</div>'+
+      '<div class="liq-right"><span class="liq-amt">$'+money(pp.amt)+'</span><span class="liq-pct">'+((pp.pct||0)*100).toFixed(1)+'%</span></div></div>';
+  }).join('');
+  const bill=(c.bill||[]).map(function(b){
+    return '<div class="bill-row"><span class="bill-emoji">'+esc(b.emoji||'🍽️')+'</span><span class="bill-name">'+esc(b.name)+'</span>'+
+      '<span class="bill-qty">×'+b.qty+' · $'+money(b.price)+'</span><span class="bill-sub">$'+money(b.sub)+'</span></div>';
+  }).join('')||'<div class="empty">Sin consumos</div>';
+  document.getElementById('sheet').innerHTML=
+    '<div class="grabber"></div><h2>Cierre '+esc(histDate(c.closed_at))+'</h2>'+
+    '<p class="desc">'+(c.tip?c.tip+'% propina · ':'')+(c.override?'ajustada al total real · ':'')+(c.people?c.people.length:0)+' personas.</p>'+
+    '<div class="liq-list">'+rows+'</div>'+
+    '<div class="liq-grand"><span>Total'+(c.tip?' con propina':'')+'</span><b>$'+money(c.grand)+'</b></div>'+
+    '<div class="field-label">La cuenta</div><div class="bill-list">'+bill+'</div>'+
+    '<div class="sheet-actions" style="margin-top:16px">'+
+      '<button class="sheet-btn confirm" style="background:var(--gold);color:#231c00" onclick="copyClosure('+i+')">Copiar resumen</button>'+
+    '</div>'+
+    '<div class="sheet-actions" style="margin-top:9px"><button class="sheet-btn cancel" style="flex:1" onclick="drawHistory()">← Volver al historial</button></div>';
+}
+function copyClosure(i){
+  const c=histCache[i]; if(!c)return;
+  const people=(c.people||[]).slice().sort(function(a,b){return b.amt-a.amt;});
+  let txt='🍺 Ronda — Cierre '+histDate(c.closed_at)+'\n';
+  if(c.code)txt+='Mesa '+c.code+'\n';
+  if(c.tip)txt+='('+c.tip+'% propina)\n';
+  txt+='Total: $'+money(c.grand)+'\n————\n'+people.map(function(pp){return pp.name+': $'+money(pp.amt)+' ('+((pp.pct||0)*100).toFixed(1)+'%)';}).join('\n');
+  txt+='\n————\nLa cuenta:\n'+(c.bill||[]).map(function(b){return b.name+' ×'+b.qty+': $'+money(b.sub);}).join('\n');
+  copyText(txt,'Cierre copiado');
+}
+
+/* ── init ── */
+(function(){
+  if(!load()){
+    seedProducts();
+    for(let i=0;i<8;i++)state.people.push(mkPerson(''));
+    save();
+  }
+  showView(state.view||'mesa');
+  render();
+  setInterval(tick,1000);
+  updateCloudBar();
+  // Reconectar a una mesa online si venís por link (#m=CODE) o ya estabas en una
+  const hashCode=(location.hash.match(/m=([A-Za-z0-9]+)/)||[])[1];
+  let stored=null; try{stored=JSON.parse(localStorage.getItem('ronda-event')||'null');}catch(e){}
+  const code=hashCode||(stored&&stored.code);
+  if(sb&&code) joinEvent(code,true);
+})();
+</script>
