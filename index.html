@@ -307,6 +307,45 @@ input[type=number]{-moz-appearance:textfield;}
 .nav-btn.active{color:var(--accent);}
 .nav-btn svg{width:22px;height:22px;}
 
+/* ── Home panel ── */
+.home-hero{text-align:center;padding:52px 20px 28px;}
+.home-emoji{font-size:60px;margin-bottom:6px;}
+.home-title{font-size:36px;font-weight:700;letter-spacing:-0.5px;}
+.home-sub{font-size:13px;color:var(--text-2);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.home-actions{display:flex;flex-direction:column;gap:11px;padding:0 16px;}
+.home-btn{
+  width:100%;height:56px;border-radius:var(--radius);cursor:pointer;
+  font-family:inherit;font-size:16px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:10px;border:none;
+}
+.home-btn:active{opacity:.88;}
+.home-btn.primary{background:var(--accent);color:#fff;}
+.home-btn.go{background:var(--active);color:#fff;}
+.home-btn.outline{background:transparent;border:2px solid var(--border);color:var(--text);}
+.home-section{padding:0 16px;margin-top:20px;}
+.home-recent-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);cursor:pointer;font-family:inherit;color:var(--text);
+  margin-bottom:8px;
+}
+.home-recent-item:active{opacity:.85;}
+.home-recent-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.home-recent-sub{font-size:11px;color:var(--text-2);margin-top:1px;}
+.home-recent-code{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;letter-spacing:1.5px;color:var(--gold);flex-shrink:0;}
+.venue-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:600;color:var(--gold);
+  background:var(--surface-2);border-radius:999px;padding:3px 10px;
+  max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.venue-input{
+  width:100%;height:50px;border:1px solid var(--border);border-radius:12px;padding:0 16px;
+  background:var(--bg);color:var(--text);font-family:inherit;font-size:16px;outline:none;
+}
+.venue-input:focus{border-color:var(--accent);}
+.header.home-mode{display:none;}
+
 /* ── Modal ── */
 .overlay{
   position:fixed;inset:0;z-index:50;background:rgba(20,15,8,.5);
@@ -490,6 +529,7 @@ input[type=number]{-moz-appearance:textfield;}
   <header class="header">
     <div class="header-top">
       <div class="brand"><h1>Ronda</h1><span class="sub">la mesa</span></div>
+      <span class="venue-chip" id="venueChip" style="display:none"></span>
       <span class="clock mono" id="clock">--:--</span>
     </div>
     <div class="stats">
@@ -504,8 +544,32 @@ input[type=number]{-moz-appearance:textfield;}
     </button>
   </header>
 
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="home-hero">
+      <div class="home-emoji">🍺</div>
+      <div class="home-title">Ronda</div>
+      <div class="home-sub">la mesa</div>
+    </div>
+    <div class="home-actions" id="homeActions">
+      <button class="home-btn primary" onclick="openNewMesaSheet()">+ Nueva mesa</button>
+      <button class="home-btn outline" onclick="openHistoryFromHome()">📖 Historial de cierres</button>
+    </div>
+    <div id="homeContinue" style="display:none;padding:0 16px;margin-top:14px;">
+      <button class="home-btn go" id="continueBtn" onclick="showView('mesa')">Continuar mesa actual</button>
+    </div>
+    <div class="home-section">
+      <div class="field-label">¿Tenés un código de mesa?</div>
+      <div class="add-prod" style="margin-top:8px;padding:8px">
+        <input id="homeJoinCode" class="n" placeholder="Código (ej: 4F7K)" autocomplete="off" style="text-transform:uppercase">
+        <button type="button" style="width:auto;padding:0 16px;font-size:14px" onclick="joinFromHome()">Unirme</button>
+      </div>
+    </div>
+    <div class="home-section" id="homeRecent"></div>
+  </section>
+
   <!-- MESA -->
-  <section class="view active" id="view-mesa">
+  <section class="view" id="view-mesa">
     <div class="people" id="people"></div>
     <div class="list-actions">
       <button class="big-btn ghost" onclick="addPerson()">+ Persona</button>
@@ -528,8 +592,12 @@ input[type=number]{-moz-appearance:textfield;}
 </div>
 
 <!-- Bottom nav -->
-<nav class="nav">
-  <button class="nav-btn active" id="nav-mesa" onclick="showView('mesa')">
+<nav class="nav" id="mainNav">
+  <button class="nav-btn" id="nav-home" onclick="showView('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5z" stroke-linejoin="round"/><path d="M9 21V13h6v8"/></svg>
+    Inicio
+  </button>
+  <button class="nav-btn" id="nav-mesa" onclick="showView('mesa')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M4 19c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M15.5 14.2c2 .3 3.5 2 3.5 4.3" stroke-linecap="round"/></svg>
     Mesa
   </button>
@@ -555,7 +623,7 @@ input[type=number]{-moz-appearance:textfield;}
 const EMOJI = ['🍷','🍕','🥖','🍺','🥤','🍟','🥩','🧀','🍞','☕','🍸','🥂','🌭','🍔','🫒','🍋'];
 const AV_COLORS = ['#c0392b','#2f8f4e','#2f6f8f','#a67c17','#8e44ad','#d35400','#16a085','#c2185b','#5d4037','#455a64'];
 
-let state = { products: [], people: [], orders: [], expanded: null, view: 'mesa' };
+let state = { products: [], people: [], orders: [], expanded: null, view: 'home', venue: '' };
 // Globally-unique-enough numeric ids so two phones never collide on insert.
 const uid = () => Math.floor(Math.random()*9e15)+1;
 
@@ -605,7 +673,7 @@ function load(){
   try{
     const raw=localStorage.getItem('ronda-v3');
     if(raw){const p=JSON.parse(raw);
-      if(p&&Array.isArray(p.people)){state=Object.assign({expanded:null,view:'mesa'},p);return true;}}
+      if(p&&Array.isArray(p.people)){state=Object.assign({expanded:null,view:'home',venue:''},p);return true;}}
     // migrate v2 (people + free items) → v3
     const old=localStorage.getItem('ronda-v2');
     if(old){const o=JSON.parse(old);
@@ -935,22 +1003,112 @@ function confirmLoad(){
 /* ── views ── */
 function showView(v){
   state.view=v;save();
+  document.getElementById('view-home').classList.toggle('active',v==='home');
   document.getElementById('view-mesa').classList.toggle('active',v==='mesa');
   document.getElementById('view-menu').classList.toggle('active',v==='menu');
+  document.getElementById('nav-home').classList.toggle('active',v==='home');
   document.getElementById('nav-mesa').classList.toggle('active',v==='mesa');
   document.getElementById('nav-menu').classList.toggle('active',v==='menu');
-  if(v==='menu')renderMenu(); else render();
+  document.querySelector('.header').classList.toggle('home-mode',v==='home');
+  if(v==='home') renderHome();
+  else if(v==='menu') renderMenu();
+  else render();
+  updateVenueChip();
   window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateVenueChip(){
+  const chip=document.getElementById('venueChip');
+  if(chip){
+    if(state.venue){chip.textContent='📍 '+state.venue;chip.style.display='';}
+    else chip.style.display='none';
+  }
+}
+function renderHome(){
+  var cont=document.getElementById('homeContinue');
+  var hasMesa=state.people.length>0||state.orders.length>0;
+  if(cont){
+    cont.style.display=hasMesa?'':'none';
+    var btn=document.getElementById('continueBtn');
+    if(btn) btn.textContent=state.venue?'Continuar en '+state.venue:'Continuar mesa actual';
+  }
+  var recent=document.getElementById('homeRecent');
+  if(recent){
+    var list=loadRecent();
+    if(list.length){
+      recent.innerHTML='<div class="field-label">Mesas recientes</div>'+list.slice(0,6).map(function(m){
+        var vn=m.venue?' · '+esc(m.venue):'';
+        return '<button class="home-recent-item" onclick="joinEvent(\''+esc(m.code)+'\')">'+
+          '<div><div class="home-recent-name">'+(m.venue||'Mesa '+m.code)+'</div>'+
+          '<div class="home-recent-sub">'+esc(histDate(new Date(m.at).toISOString()))+vn+'</div></div>'+
+          '<span class="home-recent-code">'+esc(m.code)+'</span></button>';
+      }).join('');
+    } else recent.innerHTML='';
+  }
+}
+function openNewMesaSheet(){
+  var h='<div class="grabber"></div>'+
+    '<h2>Nueva mesa</h2>'+
+    '<p class="desc">Ingresá el nombre del bar o restaurante para asociar el menú y los precios a este lugar.</p>'+
+    '<div class="field-label">Bar / Restaurante</div>'+
+    '<input class="venue-input" id="venueInput" type="text" placeholder="Ej: Bar de Pablo, La Pasiva..." autocomplete="off">'+
+    '<div class="sheet-actions" style="margin-top:20px">'+
+      '<button class="sheet-btn cancel" onclick="closeSheet()">Cancelar</button>'+
+      '<button class="sheet-btn confirm" onclick="confirmNewMesa()">Crear mesa</button>'+
+    '</div>';
+  document.getElementById('sheet').innerHTML=h;
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(function(){var inp=document.getElementById('venueInput');if(inp)inp.focus();},200);
+}
+function confirmNewMesa(){
+  var inp=document.getElementById('venueInput');
+  var venue=(inp?inp.value:'').trim();
+  closeSheet();
+  state={products:[],people:[],orders:[],expanded:null,view:'mesa',venue:venue};
+  seedProducts();
+  for(var i=0;i<8;i++)state.people.push(mkPerson(''));
+  save();
+  if(sb){
+    createEventWithVenue(venue);
+  } else {
+    showView('mesa');render();
+    toast('Mesa creada'+(venue?' en '+venue:''));
+  }
+}
+async function createEventWithVenue(venue){
+  toast('Creando mesa…');
+  for(var attempt=0;attempt<5;attempt++){
+    var code=genCode();
+    var res=await sb.from('ronda_events').insert({code:code}).select().single();
+    if(res.error){if(res.error.code==='23505')continue;toast('Error: '+(res.error.message||'no se pudo'));showView('mesa');render();return;}
+    cloud={code:code,eventId:res.data.id};persistCloud();rememberMesa(code,venue);
+    lastPush=0;await pushAll();
+    try{location.hash='m='+code;}catch(e){}
+    subscribeRealtime();startPoll();updateCloudBar();
+    showView('mesa');render();
+    toast('¡Mesa '+code+(venue?' en '+venue:'')+' creada!');
+    return;
+  }
+  toast('No se pudo generar un código, probá de nuevo');
+  showView('mesa');render();
+}
+function openHistoryFromHome(){
+  openHistory();
+}
+function joinFromHome(){
+  var el=document.getElementById('homeJoinCode');
+  if(el&&el.value.trim()){
+    joinEvent(el.value.trim());
+    showView('mesa');
+  }
 }
 
 function resetAll(){
   const msg=cloud?'¿Reiniciar esta mesa online? Se borra para TODOS (personas, consumos y precios).':'¿Reiniciar todo? Se borran personas, consumos y precios.';
   if(!confirm(msg))return;
-  state={products:[],people:[],orders:[],expanded:null,view:'mesa'};
+  state={products:[],people:[],orders:[],expanded:null,view:'home',venue:''};
   seedProducts();
-  for(let i=0;i<8;i++)state.people.push(mkPerson(''));
   if(!cloud){try{localStorage.removeItem('ronda-v3');localStorage.removeItem('ronda-v2');}catch(e){}}
-  save();showView('mesa');render();
+  save();showView('home');
 }
 
 /* ══════════════ NUBE (Supabase) ══════════════ */
@@ -1054,7 +1212,8 @@ async function joinEvent(code,silent){
     cloud={code,eventId:data.id}; persistCloud(); rememberMesa(code);
     try{location.hash='m='+code;}catch(e){}
     await pullAll(); subscribeRealtime(); startPoll(); updateCloudBar('ok');
-    if(!silent){drawCloud();toast('Conectado a la mesa '+code);}
+    if(!silent){showView('mesa');render();toast('Conectado a la mesa '+code);}
+    else if(state.view==='home'){showView('mesa');render();}
   }catch(e){ updateCloudBar('err'); if(!silent)toast('No se pudo conectar'); }
 }
 function joinFromInput(){const el=document.getElementById('joinCode');if(el)joinEvent(el.value);}
@@ -1062,10 +1221,10 @@ function joinFromInput(){const el=document.getElementById('joinCode');if(el)join
 /* ── Mesas recientes ── */
 function loadRecent(){try{return JSON.parse(localStorage.getItem('ronda-recent')||'[]');}catch(e){return [];}}
 function saveRecent(list){try{localStorage.setItem('ronda-recent',JSON.stringify(list.slice(0,10)));}catch(e){}}
-function rememberMesa(code){
+function rememberMesa(code,venue){
   if(!code)return;
   const list=loadRecent().filter(function(m){return m.code!==code;});
-  list.unshift({code:code,at:Date.now()});
+  list.unshift({code:code,at:Date.now(),venue:venue||state.venue||''});
   saveRecent(list);
 }
 
@@ -1080,7 +1239,7 @@ async function createFreshMesa(keepProducts){
   // Reset local state; NO tocamos la mesa anterior en la nube (queda con su código)
   if(rtChannel){try{sb.removeChannel(rtChannel);}catch(e){}rtChannel=null;}
   if(pollT){clearInterval(pollT);pollT=null;}
-  cloud=null; state={products:prevProducts.length?prevProducts:[],people:[],orders:[],expanded:null,view:'mesa'};
+  cloud=null; state={products:prevProducts.length?prevProducts:[],people:[],orders:[],expanded:null,view:'mesa',venue:''};
   if(!prevProducts.length)seedProducts();
   for(let i=0;i<8;i++)state.people.push(mkPerson(''));
   save();
@@ -1264,6 +1423,7 @@ function copySummary(){
   const lines=settleRows().map(function(r){return (r.p.name||('Persona '+r.p.num))+': $'+money(r.amt)+' ('+(r.pct*100).toFixed(1)+'%)';});
   const bill=billLines().map(function(b){return b.name+' ×'+b.qty+': $'+money(b.sub);});
   let txt='🍺 Ronda — Liquidación\n';
+  if(state.venue)txt+=state.venue+'\n';
   if(cloud)txt+='Mesa '+cloud.code+'\n';
   if(settleTip)txt+='(incluye '+settleTip+'% de propina)\n';
   if(adj)txt+='(ajustado al total real $'+money(settleOverride)+')\n';
@@ -1275,6 +1435,7 @@ function buildClosure(){
   return {
     closed_at:new Date().toISOString(),
     code:cloud?cloud.code:null,
+    venue:state.venue||'',
     total:tableTotal(), grand:settleGrand(), tip:settleTip, override:settleOverride||null,
     people:settleRows().map(function(r){return {name:r.p.name||('Persona '+r.p.num),num:r.p.num,amt:r.amt,pct:r.pct,ms:elapsed(r.p)};}),
     bill:billLines().map(function(b){return {name:b.name,qty:b.qty,price:b.price,sub:b.sub,emoji:b.emoji};})
@@ -1300,8 +1461,9 @@ function askCloseMesa(){
     const snap=buildClosure();
     await saveClosure(snap);
     state.orders=[];
-    state.people.forEach(function(p){p.arrivedAt=Date.now();p.leftAt=null;p.accumulatedMs=0;});
-    save();render();closeSheet();toast('Mesa cerrada y guardada en el historial');
+    state.people=[];
+    state.venue='';
+    save();closeSheet();showView('home');toast('Mesa cerrada y guardada en el historial');
   });
 }
 
@@ -1327,7 +1489,7 @@ async function openHistory(){
 function drawHistory(){
   const rows=histCache.length? histCache.map(function(c,i){
     return '<button class="hist-row" onclick="openClosure('+i+')">'+
-      '<div class="hist-main"><div class="hist-date">'+esc(histDate(c.closed_at))+'</div>'+
+      '<div class="hist-main"><div class="hist-date">'+(c.venue?esc(c.venue)+' · ':'')+esc(histDate(c.closed_at))+'</div>'+
         '<div class="hist-sub">'+(c.people?c.people.length:0)+' personas'+(c.tip?' · '+c.tip+'% prop.':'')+(c.override?' · ajustada':'')+'</div></div>'+
       '<span class="hist-amt">$'+money(c.grand)+'</span>'+
       '<svg width="12" height="12" viewBox="0 0 12 12" style="color:var(--text-2);flex-shrink:0"><polyline points="4,2 8,6 4,10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
@@ -1352,8 +1514,8 @@ function openClosure(i){
       '<span class="bill-qty">×'+b.qty+' · $'+money(b.price)+'</span><span class="bill-sub">$'+money(b.sub)+'</span></div>';
   }).join('')||'<div class="empty">Sin consumos</div>';
   document.getElementById('sheet').innerHTML=
-    '<div class="grabber"></div><h2>Cierre '+esc(histDate(c.closed_at))+'</h2>'+
-    '<p class="desc">'+(c.tip?c.tip+'% propina · ':'')+(c.override?'ajustada al total real · ':'')+(c.people?c.people.length:0)+' personas.</p>'+
+    '<div class="grabber"></div><h2>Cierre '+(c.venue?esc(c.venue):esc(histDate(c.closed_at)))+'</h2>'+
+    '<p class="desc">'+esc(histDate(c.closed_at))+' · '+(c.tip?c.tip+'% propina · ':'')+(c.override?'ajustada al total real · ':'')+(c.people?c.people.length:0)+' personas.</p>'+
     '<div class="liq-list">'+rows+'</div>'+
     '<div class="liq-grand"><span>Total'+(c.tip?' con propina':'')+'</span><b>$'+money(c.grand)+'</b></div>'+
     '<div class="field-label">La cuenta</div><div class="bill-list">'+bill+'</div>'+
@@ -1366,6 +1528,7 @@ function copyClosure(i){
   const c=histCache[i]; if(!c)return;
   const people=(c.people||[]).slice().sort(function(a,b){return b.amt-a.amt;});
   let txt='🍺 Ronda — Cierre '+histDate(c.closed_at)+'\n';
+  if(c.venue)txt+=c.venue+'\n';
   if(c.code)txt+='Mesa '+c.code+'\n';
   if(c.tip)txt+='('+c.tip+'% propina)\n';
   txt+='Total: $'+money(c.grand)+'\n————\n'+people.map(function(pp){return pp.name+': $'+money(pp.amt)+' ('+((pp.pct||0)*100).toFixed(1)+'%)';}).join('\n');
@@ -1375,19 +1538,23 @@ function copyClosure(i){
 
 /* ── init ── */
 (function(){
-  if(!load()){
+  const hadData=load();
+  if(!hadData){
     seedProducts();
-    for(let i=0;i<8;i++)state.people.push(mkPerson(''));
     save();
   }
-  showView(state.view||'mesa');
-  render();
-  setInterval(tick,1000);
-  updateCloudBar();
-  // Reconectar a una mesa online si venís por link (#m=CODE) o ya estabas en una
   const hashCode=(location.hash.match(/m=([A-Za-z0-9]+)/)||[])[1];
   let stored=null; try{stored=JSON.parse(localStorage.getItem('ronda-event')||'null');}catch(e){}
   const code=hashCode||(stored&&stored.code);
+  const hasMesa=state.people.length>0||state.orders.length>0;
+  if(code||hasMesa){
+    showView(hasMesa?'mesa':'home');
+  } else {
+    showView('home');
+  }
+  render();
+  setInterval(tick,1000);
+  updateCloudBar();
   if(sb&&code) joinEvent(code,true);
 })();
 </script>
