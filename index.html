@@ -1045,26 +1045,75 @@ function renderHome(){
     } else recent.innerHTML='';
   }
 }
+/* ── Venue menus (remember menu per bar) ── */
+function loadVenueMenus(){try{return JSON.parse(localStorage.getItem('ronda-venue-menus')||'{}');}catch(e){return {};}}
+function saveVenueMenu(venue,products){
+  if(!venue)return;
+  var menus=loadVenueMenus();
+  menus[venue.toLowerCase()]={venue:venue,products:products.filter(function(p){return p.name&&p.price>0;}).map(function(p){return {name:p.name,price:p.price,emoji:p.emoji};})};
+  try{localStorage.setItem('ronda-venue-menus',JSON.stringify(menus));}catch(e){}
+}
+function getVenueMenu(venue){
+  if(!venue)return null;
+  var menus=loadVenueMenus();
+  var entry=menus[venue.toLowerCase()];
+  return entry&&entry.products&&entry.products.length?entry:null;
+}
+function listKnownVenues(){
+  var menus=loadVenueMenus();
+  return Object.keys(menus).map(function(k){return menus[k];}).filter(function(v){return v.products&&v.products.length;});
+}
+
 function openNewMesaSheet(){
+  var venues=listKnownVenues();
+  var suggestions=venues.length?
+    '<div class="field-label">Bares anteriores (con menú guardado)</div>'+
+    '<div class="chips" style="margin-bottom:12px">'+venues.map(function(v){
+      return '<button class="chip" onclick="pickVenue(\''+esc(v.venue.replace(/'/g,"\\\'"))+'\')">📍 '+esc(v.venue)+' <span class="p">'+v.products.length+' productos</span></button>';
+    }).join('')+'</div>' : '';
   var h='<div class="grabber"></div>'+
     '<h2>Nueva mesa</h2>'+
-    '<p class="desc">Ingresá el nombre del bar o restaurante para asociar el menú y los precios a este lugar.</p>'+
+    '<p class="desc">Ingresá el nombre del bar o restaurante. Si ya fuiste, se carga el menú con los precios automáticamente.</p>'+
+    suggestions+
     '<div class="field-label">Bar / Restaurante</div>'+
     '<input class="venue-input" id="venueInput" type="text" placeholder="Ej: Bar de Pablo, La Pasiva..." autocomplete="off">'+
+    '<div id="venueMenuHint" style="margin-top:8px"></div>'+
     '<div class="sheet-actions" style="margin-top:20px">'+
       '<button class="sheet-btn cancel" onclick="closeSheet()">Cancelar</button>'+
       '<button class="sheet-btn confirm" onclick="confirmNewMesa()">Crear mesa</button>'+
     '</div>';
   document.getElementById('sheet').innerHTML=h;
   document.getElementById('overlay').classList.add('show');
-  setTimeout(function(){var inp=document.getElementById('venueInput');if(inp)inp.focus();},200);
+  var inp=document.getElementById('venueInput');
+  if(inp){inp.addEventListener('input',checkVenueHint);setTimeout(function(){inp.focus();},200);}
+}
+function pickVenue(name){
+  var inp=document.getElementById('venueInput');
+  if(inp){inp.value=name;checkVenueHint();}
+}
+function checkVenueHint(){
+  var inp=document.getElementById('venueInput');
+  var hint=document.getElementById('venueMenuHint');
+  if(!inp||!hint)return;
+  var v=inp.value.trim();
+  var menu=getVenueMenu(v);
+  if(menu){
+    hint.innerHTML='<div style="padding:8px 12px;background:var(--surface-2);border-radius:10px;font-size:13px;color:var(--active);font-weight:600">✓ Menú guardado: '+menu.products.length+' productos con precios. Se carga automáticamente.</div>';
+  } else {
+    hint.innerHTML='';
+  }
 }
 function confirmNewMesa(){
   var inp=document.getElementById('venueInput');
   var venue=(inp?inp.value:'').trim();
   closeSheet();
   state={products:[],people:[],orders:[],expanded:null,view:'mesa',venue:venue};
-  seedProducts();
+  var saved=getVenueMenu(venue);
+  if(saved){
+    state.products=saved.products.map(function(p){return {id:uid(),name:p.name,price:p.price,emoji:p.emoji||pickEmoji(p.name)};});
+  } else {
+    seedProducts();
+  }
   for(var i=0;i<8;i++)state.people.push(mkPerson(''));
   save();
   if(sb){
@@ -1460,6 +1509,7 @@ function askCloseMesa(){
   askConfirm(html,async function(){
     const snap=buildClosure();
     await saveClosure(snap);
+    if(state.venue)saveVenueMenu(state.venue,state.products);
     state.orders=[];
     state.people=[];
     state.venue='';
@@ -1484,6 +1534,12 @@ async function openHistory(){
   document.getElementById('sheet').innerHTML='<div class="grabber"></div><h2>Historial de cierres</h2><p class="desc">Cargando…</p>';
   document.getElementById('overlay').classList.add('show');
   histCache=await loadClosures();
+  histCache.forEach(function(c){
+    var v=c.venue||(c.data&&c.data.venue);
+    if(v&&c.bill&&c.bill.length&&!getVenueMenu(v)){
+      saveVenueMenu(v,c.bill.map(function(b){return {name:b.name,price:b.price,emoji:b.emoji};}));
+    }
+  });
   drawHistory();
 }
 function drawHistory(){
@@ -1543,6 +1599,15 @@ function copyClosure(i){
     seedProducts();
     save();
   }
+  // Extract venue menus from local history closures
+  try{
+    var hist=JSON.parse(localStorage.getItem('ronda-history')||'[]');
+    hist.forEach(function(c){
+      if(c.venue&&c.bill&&c.bill.length&&!getVenueMenu(c.venue)){
+        saveVenueMenu(c.venue,c.bill.map(function(b){return {name:b.name,price:b.price,emoji:b.emoji};}));
+      }
+    });
+  }catch(e){}
   const hashCode=(location.hash.match(/m=([A-Za-z0-9]+)/)||[])[1];
   let stored=null; try{stored=JSON.parse(localStorage.getItem('ronda-event')||'null');}catch(e){}
   const code=hashCode||(stored&&stored.code);
