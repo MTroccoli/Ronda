@@ -587,12 +587,25 @@ input[type=number]{-moz-appearance:textfield;}
 
   <!-- MESA -->
   <section class="view" id="view-mesa">
-    <div class="people" id="people"></div>
-    <div class="list-actions">
-      <button class="big-btn ghost" onclick="addPerson()">+ Persona</button>
-      <button class="big-btn solid" onclick="openLoad()">＋ Cargar a la mesa</button>
+    <!-- Empty state (no active mesa) -->
+    <div id="mesaEmpty" style="display:none">
+      <div style="text-align:center;padding:60px 20px 30px">
+        <div style="font-size:48px;margin-bottom:10px">🍻</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">No hay mesa activa</div>
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:24px">Creá una mesa nueva para empezar a cargar consumos</div>
+        <button class="home-btn primary" style="max-width:300px;margin:0 auto" onclick="openNewMesaSheet()">+ Nueva mesa</button>
+      </div>
     </div>
-    <button class="settle-btn" onclick="openSettle()">🧾 Cerrar y liquidar la mesa</button>
+    <!-- Active mesa -->
+    <div id="mesaActive">
+      <div class="people" id="people"></div>
+      <div class="list-actions">
+        <button class="big-btn ghost" onclick="addPerson()">+ Persona</button>
+        <button class="big-btn solid" onclick="openLoad()">＋ Cargar a la mesa</button>
+      </div>
+      <button class="settle-btn" onclick="openSettle()">🧾 Cerrar y liquidar la mesa</button>
+      <div class="reset-line" style="margin-top:6px"><button class="reset-btn" onclick="deleteMesa()" style="color:var(--accent)">🗑 Eliminar mesa</button></div>
+    </div>
   </section>
 
   <!-- MENU -->
@@ -741,6 +754,13 @@ function renderStats(){
 
 /* ── render: people ── */
 function render(){
+  var mesaEmpty=document.getElementById('mesaEmpty');
+  var mesaActive=document.getElementById('mesaActive');
+  var hasData=state.people.length>0||state.orders.length>0;
+  if(mesaEmpty&&mesaActive){
+    mesaEmpty.style.display=hasData?'none':'';
+    mesaActive.style.display=hasData?'':'none';
+  }
   const host=document.getElementById('people');
   const active=document.activeElement;
   const keepId=active&&active.classList.contains('name-input')?active.dataset.pid:null;
@@ -1275,6 +1295,17 @@ function resetAll(){
   seedProducts();
   if(!cloud){try{localStorage.removeItem('ronda-v3');localStorage.removeItem('ronda-v2');}catch(e){}}
   save();showView('home');
+}
+function deleteMesa(){
+  var vn=state.venue?' en '+state.venue:'';
+  if(!confirm('¿Eliminar esta mesa'+vn+'? Se borran personas y consumos sin liquidar.'))return;
+  if(state.venue)saveVenueMenu(state.venue,state.products);
+  state={products:[],people:[],orders:[],expanded:null,view:'home',venue:''};
+  cloud=null;persistCloud();
+  try{localStorage.removeItem('ronda-v3');localStorage.removeItem('ronda-v2');}catch(e){}
+  try{location.hash='';}catch(e){}
+  save();showView('home');
+  toast('Mesa eliminada');
 }
 
 /* ══════════════ NUBE (Supabase) ══════════════ */
